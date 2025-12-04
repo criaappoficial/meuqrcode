@@ -9,6 +9,7 @@ import {
   getDocs,
   query,
   orderBy,
+  where,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -26,6 +27,7 @@ const slugify = (value) =>
 
 export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl }) {
   const id = slugify(fixedId) || slugify(title) || `link-${Date.now()}`;
+  const docId = id.replace(/\//g, '__');
   const payload = {
     id,
     fixedUrl: fixedUrl || null,
@@ -36,7 +38,7 @@ export async function createQRCodeRecord({ title, destination, active = true, id
     updatedAt: serverTimestamp()
   };
   // documento salvo com o próprio id como ID do doc
-  await setDoc(doc(db, 'qrcodes', id), payload);
+  await setDoc(doc(db, 'qrcodes', docId), payload);
   return payload;
 }
 
@@ -65,10 +67,11 @@ export async function getQRCodeRecord(docId) {
 
 // agora busca direto pelo ID do documento (que é o mesmo campo id)
 export async function getQRCodeRecordByPublicId(id) {
-  const ref = doc(db, 'qrcodes', id);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
-  return { docId: snap.id, ...snap.data() };
+  const q = query(qrCollection, where('id', '==', id));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  const docSnap = snapshot.docs[0];
+  return { docId: docSnap.id, ...docSnap.data() };
 }
 
 export async function listQRCodes() {
