@@ -52,7 +52,10 @@ els.tableBody?.addEventListener('click', (event) => {
 
   if (target.dataset.action === 'preview') {
     if (!publicId) return;
-    const qrUrl = composeQrUrl(publicId);
+    const fixedUrl = target.dataset.fixedUrl;
+    const qrUrl = (BASE_URL === window.location.origin)
+      ? composeQrUrl(publicId)
+      : (fixedUrl || composeQrUrl(publicId));
     els.qrPreviewUrl.textContent = qrUrl;
     toggleState(els.qrPreviewModal, true);
     drawQRCode('qrPreviewCanvas', qrUrl).catch(console.error);
@@ -60,7 +63,10 @@ els.tableBody?.addEventListener('click', (event) => {
 
   if (target.dataset.action === 'download') {
     if (!publicId) return;
-    const qrUrl = composeQrUrl(publicId);
+    const fixedUrl = target.dataset.fixedUrl;
+    const qrUrl = (BASE_URL === window.location.origin)
+      ? composeQrUrl(publicId)
+      : (fixedUrl || composeQrUrl(publicId));
     const filename = `${(title || 'qrcode').replace(/\s+/g, '-').toLowerCase()}-${publicId}.png`;
     drawQRCode('qrPreviewCanvas', qrUrl)
       .then(() => downloadQRCode('qrPreviewCanvas', filename))
@@ -110,14 +116,14 @@ async function loadDashboard() {
         <td>${qr.title || 'Sem título'}</td>
         <td class="col-destination"><a href="${qr.destination}" target="_blank">${truncate(qr.destination)}</a></td>
         <td class="col-qr">
-          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}">🔍</button>
+          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">🔍</button>
         </td>
         <td><span class="badge ${qr.active ? 'badge-active' : 'badge-inactive'}">${qr.active ? 'Ativo' : 'Inativo'}</span></td>
         <td>${formatDate(qr.createdAt)}</td>
         <td>
           <div class="actions">
             <button class="icon-button" title="Editar" data-action="edit" data-id="${qr.docId}" data-title="${qr.title}">✏️</button>
-            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}">📥</button>
+            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">📥</button>
             <button class="icon-button" title="Excluir" data-action="delete" data-id="${qr.docId}" data-title="${qr.title}">🗑</button>
           </div>
         </td>

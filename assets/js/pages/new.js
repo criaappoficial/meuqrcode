@@ -40,6 +40,11 @@ form?.addEventListener('submit', async (event) => {
   const destination = normalizeUrl(form.destination.value);
   const active = form.active.checked;
 
+  if (!destination) {
+    showAlert(alertContainer, 'Informe uma URL válida para o destino (ex.: https://exemplo.com).', 'error');
+    return;
+  }
+
   const userPartRaw = toSlug(fixedUserInput?.value) || 'meus-servicos';
   const rawSlug = fixedSlugInput?.value || '';
   const isUrlLike = /^https?:/i.test(rawSlug) || rawSlug.includes('.');
@@ -53,7 +58,9 @@ form?.addEventListener('submit', async (event) => {
 
   try {
     const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave });
-    const qrUrl = composeQrUrl(created.id);
+    const qrUrl = (BASE_URL === window.location.origin)
+      ? composeQrUrl(created.id)
+      : (created.fixedUrl || composeQrUrl(created.id));
     qrUrlText.textContent = qrUrl;
     await drawQRCode('qrCanvas', qrUrl);
     preview.classList.remove('hidden');

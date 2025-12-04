@@ -61,12 +61,19 @@ els.form?.addEventListener('submit', async (event) => {
     active: els.form.active.checked
   };
 
+  if (!payload.destination) {
+    showAlert(els.alert, 'Informe uma URL válida para o destino (ex.: https://exemplo.com).', 'error');
+    return;
+  }
+
   els.submit.disabled = true;
   els.submit.innerHTML = '<span class="loading"></span> Salvando...';
 
   try {
     await QRController.update(docId, payload);
-    const qrUrl = composeQrUrl(currentRecord.id);
+    const qrUrl = (BASE_URL === window.location.origin)
+      ? composeQrUrl(currentRecord.id)
+      : (currentRecord.fixedUrl || composeQrUrl(currentRecord.id));
     els.qrUrl.textContent = qrUrl;
     await drawQRCode('qrCanvas', qrUrl);
     els.preview.classList.remove('hidden');
