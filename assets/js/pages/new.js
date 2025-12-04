@@ -2,7 +2,7 @@ import { observeAuth } from '../controllers/authController.js';
 import { QRController, drawQRCode, downloadQRCode } from '../controllers/qrController.js';
 import { showAlert } from '../views/ui.js';
 
-const PRIMARY_DOMAIN = 'https://meusservicospro.com.br';
+const PRIMARY_DOMAIN = 'https://qrcode-alugueja.netlify.app';
 const BASE_URL = (['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) ? window.location.origin : PRIMARY_DOMAIN;
 const composeQrUrl = (id) => (BASE_URL === window.location.origin)
   ? `${window.location.origin}/page/index.html?id=${id}`
