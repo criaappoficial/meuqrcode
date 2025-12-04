@@ -58,11 +58,12 @@ form?.addEventListener('submit', async (event) => {
 
   try {
     const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave });
-    const qrUrl = (BASE_URL === window.location.origin)
+    const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(created.id)
       : (created.fixedUrl || composeQrUrl(created.id));
-    qrUrlText.textContent = qrUrl;
-    await drawQRCode('qrCanvas', qrUrl);
+    const qrCodeUrl = created.fixedUrl || composeQrUrl(created.id);
+    qrUrlText.textContent = displayUrl;
+    await drawQRCode('qrCanvas', qrCodeUrl);
     preview.classList.remove('hidden');
     form.classList.add('hidden');
     showAlert(alertContainer, 'QR Code criado com sucesso!', 'success');

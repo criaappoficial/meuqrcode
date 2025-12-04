@@ -71,11 +71,12 @@ els.form?.addEventListener('submit', async (event) => {
 
   try {
     await QRController.update(docId, payload);
-    const qrUrl = (BASE_URL === window.location.origin)
+    const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(currentRecord.id)
       : (currentRecord.fixedUrl || composeQrUrl(currentRecord.id));
-    els.qrUrl.textContent = qrUrl;
-    await drawQRCode('qrCanvas', qrUrl);
+    const qrCodeUrl = currentRecord.fixedUrl || composeQrUrl(currentRecord.id);
+    els.qrUrl.textContent = displayUrl;
+    await drawQRCode('qrCanvas', qrCodeUrl);
     els.preview.classList.remove('hidden');
     els.form.classList.add('hidden');
     showAlert(els.alert, 'QR Code atualizado!', 'success');
