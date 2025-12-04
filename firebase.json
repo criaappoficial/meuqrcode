@@ -13,6 +13,9 @@
       "README.md"
     ],
     "rewrites": [
+      { "source": "/page/edit.html", "destination": "/page/edit.html" },
+      { "source": "/page/new.html", "destination": "/page/new.html" },
+      { "source": "/page/dashboard.html", "destination": "/page/dashboard.html" },
       { "source": "/page/**", "destination": "/page/index.html" },
       { "source": "/*", "destination": "/page/index.html" }
     ]
