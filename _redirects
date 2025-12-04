@@ -1,0 +1,15 @@
+# Netlify Redirects
+
+# Ensure admin pages are served directly (although Netlify does this by default for existing files, being explicit helps)
+/page/edit.html      /page/edit.html      200
+/page/new.html       /page/new.html       200
+/page/dashboard.html /page/dashboard.html 200
+
+# Handle dynamic QR code paths (e.g. /page/ferreirajy3tcz) by rewriting to the redirector
+/page/*              /page/index.html     200
+
+# Fallback for any other path to the redirector (or you might want root index.html for login)
+# If someone types /unknown, they go to redirector?
+# Or if they type /dashboard (without page), maybe redirect to login?
+# For now, mirroring Firebase config:
+/*                   /page/index.html     200
