@@ -21,9 +21,7 @@ const slugify = (value) =>
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9\-\/]/g, '')
-    .replace(/\/+/g, '/')
-    .replace(/^\/|\/$/g, '');
+    .replace(/[^a-z0-9\-]/g, '');
 
 export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl }) {
   const id = slugify(fixedId) || slugify(title) || `link-${Date.now()}`;

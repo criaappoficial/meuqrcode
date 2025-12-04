@@ -2,7 +2,11 @@ import { observeAuth, logoutUser } from '../controllers/authController.js';
 import { QRController, drawQRCode, downloadQRCode } from '../controllers/qrController.js';
 import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
 
-const BASE_URL = 'https://meusservicospro.com.br';
+const PRIMARY_DOMAIN = 'https://meusservicos.com.br';
+const BASE_URL = (['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) ? window.location.origin : PRIMARY_DOMAIN;
+const composeQrUrl = (id) => (BASE_URL === window.location.origin)
+  ? `${window.location.origin}/page/index.html?id=${id}`
+  : `${PRIMARY_DOMAIN}/${id}`;
 
 const els = {
   logoutBtn: document.getElementById('logoutBtn'),
@@ -48,7 +52,7 @@ els.tableBody?.addEventListener('click', (event) => {
 
   if (target.dataset.action === 'preview') {
     if (!publicId) return;
-    const qrUrl = `${BASE_URL}/${publicId}`;
+    const qrUrl = composeQrUrl(publicId);
     els.qrPreviewUrl.textContent = qrUrl;
     toggleState(els.qrPreviewModal, true);
     drawQRCode('qrPreviewCanvas', qrUrl).catch(console.error);
@@ -56,7 +60,7 @@ els.tableBody?.addEventListener('click', (event) => {
 
   if (target.dataset.action === 'download') {
     if (!publicId) return;
-    const qrUrl = `${BASE_URL}/${publicId}`;
+    const qrUrl = composeQrUrl(publicId);
     const filename = `${(title || 'qrcode').replace(/\s+/g, '-').toLowerCase()}-${publicId}.png`;
     drawQRCode('qrPreviewCanvas', qrUrl)
       .then(() => downloadQRCode('qrPreviewCanvas', filename))

@@ -2,7 +2,19 @@ import { observeAuth } from '../controllers/authController.js';
 import { QRController, drawQRCode, downloadQRCode } from '../controllers/qrController.js';
 import { showAlert } from '../views/ui.js';
 
-const BASE_URL = 'https://meusservicospro.com.br';
+const PRIMARY_DOMAIN = 'https://meusservicos.com.br';
+const BASE_URL = (['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) ? window.location.origin : PRIMARY_DOMAIN;
+const composeQrUrl = (id) => (BASE_URL === window.location.origin)
+  ? `${window.location.origin}/page/index.html?id=${id}`
+  : `${PRIMARY_DOMAIN}/${id}`;
+
+const normalizeUrl = (value = '') => {
+  const v = (value || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v)) return v;
+  if (/^[\w.-]+\.[a-z]{2,}([\/\?#].*)?$/i.test(v)) return `https://${v}`;
+  return '';
+};
 
 const params = new URLSearchParams(window.location.search);
 const docId = params.get('id');
@@ -45,7 +57,7 @@ els.form?.addEventListener('submit', async (event) => {
   event.preventDefault();
   const payload = {
     title: els.form.title.value,
-    destination: els.form.destination.value,
+    destination: normalizeUrl(els.form.destination.value),
     active: els.form.active.checked
   };
 
@@ -54,7 +66,7 @@ els.form?.addEventListener('submit', async (event) => {
 
   try {
     await QRController.update(docId, payload);
-    const qrUrl = `${BASE_URL}/${currentRecord.id}`;
+    const qrUrl = composeQrUrl(currentRecord.id);
     els.qrUrl.textContent = qrUrl;
     await drawQRCode('qrCanvas', qrUrl);
     els.preview.classList.remove('hidden');
