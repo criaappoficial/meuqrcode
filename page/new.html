@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Novo QR Code - QR Code Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-badge">QR</div>
+        <div>
+          <strong>Novo QR Code</strong>
+          <p style="color:var(--text-dim); font-size:.9rem;">Configure o destino e gere o código instantaneamente.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="dashboard.html" class="btn btn-secondary">Voltar</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Informações principais</h2>
+      </div>
+      <div id="alert-container"></div>
+
+      <form id="qrForm">
+        <div class="form-group">
+          <label for="title">Título *</label>
+          <input id="title" name="title" type="text" placeholder="Ex: Catálogo digital" required />
+        </div>
+
+        <div class="form-group">
+          <label>Link fixo do QR Code *</label>
+          <p style="font-size:.85rem; color:var(--text-dim); margin-bottom:.35rem;">
+            Esta será a URL permanente do QR Code. Mesmo mudando o destino, o QR continua o mesmo.
+          </p>
+          <div class="input-with-icon" style="gap:.35rem;">
+            <span style="font-size:.9rem; color:var(--text-dim);">https://meusservicospro.com.br/</span>
+            <input id="fixedUser" name="fixedUser" type="text" placeholder="seu-id-ou-nome" style="max-width:140px;" />
+            <span style="font-size:1rem; color:var(--text-dim);">/</span>
+            <input id="fixedSlug" name="fixedSlug" type="text" placeholder="meu-link" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="destination">Destino dinâmico (URL ou texto) *</label>
+          <input id="destination" name="destination" type="text" placeholder="https://minhaempresa.com" required />
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-inline">
+            <input type="checkbox" id="active" name="active" checked />
+            <span>Ativar imediatamente</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">Criar QR Code</button>
+      </form>
+
+      <div id="qrPreview" class="qr-preview hidden">
+        <h3>QR Code pronto</h3>
+        <canvas id="qrCanvas"></canvas>
+        <p style="color:var(--text-dim); text-align:center;">
+          URL configurada:<br />
+          <code id="qrUrl"></code>
+        </p>
+        <button type="button" class="btn btn-success" id="downloadBtn">Baixar QR Code</button>
+        <a href="dashboard.html" class="btn btn-secondary">Voltar ao painel</a>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="../assets/js/pages/new.js"></script>
+</body>
+</html>

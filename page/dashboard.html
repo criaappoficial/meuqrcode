@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - QR Code Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-badge">QR</div>
+        <div>
+          <strong>QR Code Manager</strong>
+          <p style="color:var(--text-dim); font-size:.9rem;">Gerencie destinos e status em tempo real.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="logoutBtn">Sair</button>
+        <a href="new.html" class="btn btn-primary">+ Novo QR Code</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Coleção de QR Codes</h2>
+      </div>
+      <div id="alert-container"></div>
+      <div id="loading" class="text-center" style="padding:2rem;">
+        <div class="loading" style="margin:auto;"></div>
+        <p style="margin-top:1rem; color:var(--text-dim);">Carregando QR Codes...</p>
+      </div>
+      <div id="qrcodes-container" class="hidden">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Destino</th>
+                <th>QR</th>
+                <th>Status</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="qrcodes-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-state-icon">✨</div>
+        <h3>Nenhum QR Code ainda</h3>
+        <p style="color:var(--text-dim);">Clique em "Novo QR Code" para começar.</p>
+      </div>
+    </section>
+  </div>
+
+  <div id="deleteModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Remover QR Code</h3>
+        <button class="modal-close" id="closeDeleteModal">×</button>
+      </div>
+      <div class="modal-body" id="modalMessage">Tem certeza?</div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelDelete">Cancelar</button>
+        <button class="btn btn-danger" id="confirmDelete">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="qrPreviewModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Pré-visualização do QR Code</h3>
+        <button class="modal-close" id="closeQrPreview">×</button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <canvas id="qrPreviewCanvas"></canvas>
+        <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
+          <small id="qrPreviewUrl"></small>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script type="module" src="../assets/js/pages/dashboard.js"></script>
+</body>
+</html>

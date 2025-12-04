@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecionando...</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <style>
+    body { justify-content:center; }
+  </style>
+</head>
+<body>
+  <div class="card" style="max-width:520px; text-align:center;">
+    <div id="loading" class="hidden">
+      <div class="loading" style="margin: auto;"></div>
+      <h2>Redirecionando...</h2>
+      <p style="color:var(--text-dim);">Aguarde um instante.</p>
+    </div>
+    <div id="inactive" class="hidden">
+      <div class="empty-state-icon" style="font-size:4rem;">🚫</div>
+      <h2>QR Code inativo</h2>
+      <p style="color:var(--text-dim);">Este QR Code foi desativado.</p>
+    </div>
+    <div id="notfound" class="hidden">
+      <div class="empty-state-icon" style="font-size:4rem;">🔍</div>
+      <h2>Não encontrado</h2>
+      <p style="color:var(--text-dim);">Nenhum QR Code corresponde a esse ID.</p>
+    </div>
+    <div id="error" class="hidden">
+      <div class="empty-state-icon" style="font-size:4rem;">⚠️</div>
+      <h2>Erro inesperado</h2>
+      <p style="color:var(--text-dim);">Tente novamente mais tarde.</p>
+    </div>
+  </div>
+
+  <script type="module" src="../assets/js/pages/redirect.js"></script>
+</body>
+</html>

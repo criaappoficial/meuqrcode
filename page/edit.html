@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar QR Code - QR Code Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-badge">QR</div>
+        <div>
+          <strong>Editar QR Code</strong>
+          <p style="color:var(--text-dim);">Atualize destino e status sempre que precisar.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="dashboard.html" class="btn btn-secondary">Voltar</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Detalhes</h2>
+      </div>
+      <div id="alert-container"></div>
+      <div id="loading" class="text-center" style="padding:2rem;">
+        <div class="loading" style="margin:auto;"></div>
+        <p style="color:var(--text-dim);">Buscando QR Code...</p>
+      </div>
+
+      <form id="qrForm" class="hidden">
+        <div class="form-group">
+          <label for="title">Título *</label>
+          <input id="title" name="title" type="text" required />
+        </div>
+        <div class="form-group">
+          <label for="destination">Destino *</label>
+          <input id="destination" name="destination" type="text" required />
+        </div>
+        <div class="form-group">
+          <label class="checkbox-inline">
+            <input type="checkbox" id="active" name="active" />
+            <span>QR Code ativo</span>
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Salvar Alterações</button>
+      </form>
+
+      <div id="qrPreview" class="qr-preview hidden">
+        <h3>Visualização atualizada</h3>
+        <canvas id="qrCanvas"></canvas>
+        <p style="color:var(--text-dim); text-align:center;">
+          URL atual:<br /><code id="qrUrl"></code>
+        </p>
+        <button type="button" class="btn btn-success" id="downloadBtn">Baixar QR Code</button>
+        <a href="dashboard.html" class="btn btn-secondary">Voltar ao painel</a>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="../assets/js/pages/edit.js"></script>
+</body>
+</html>

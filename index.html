@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Code Manager - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="login-shell">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;">
+        <div class="brand-badge">QR</div>
+      </div>
+      <h1>Bem-vindo de volta</h1>
+      <p style="text-align:center; color: var(--text-dim); margin-bottom:1.5rem;">Acesse o painel para gerenciar seus QR Codes dinâmicos.</p>
+      <div id="alert-container"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" name="email" placeholder="voce@email.com" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <div class="input-with-icon">
+            <input type="password" name="password" id="passwordInput" placeholder="••••••••" required />
+            <button type="button" class="icon-button" id="togglePassword" aria-label="Mostrar ou ocultar senha">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn" style="width:100%; justify-content:center;">
+          <span id="loginBtnText">Entrar</span>
+          <span class="loading hidden" id="loginLoading"></span>
+        </button>
+        <p style="text-align:center; margin-top:1rem; color:var(--text-dim); font-size:.9rem;">
+          Não tem conta? <button type="button" id="goToRegister" class="link-button">Criar conta</button>
+        </p>
+      </form>
+
+      <form id="registerForm" class="hidden">
+        <div class="form-group">
+          <label for="name">Nome</label>
+          <input type="text" name="name" placeholder="Seu nome" required />
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" name="regEmail" placeholder="voce@email.com" required />
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Senha</label>
+          <div class="input-with-icon">
+            <input type="password" name="regPassword" id="regPassword" placeholder="Crie uma senha" required />
+            <button type="button" class="icon-button" id="toggleRegPassword" aria-label="Mostrar ou ocultar senha">👁</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="regPasswordConfirm">Confirmar senha</label>
+          <input type="password" name="regPasswordConfirm" id="regPasswordConfirm" placeholder="Repita a senha" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="registerSubmit" style="width:100%; justify-content:center;">
+          <span id="registerBtnText">Criar conta</span>
+          <span class="loading hidden" id="registerLoading"></span>
+        </button>
+        <p style="text-align:center; margin-top:1rem; color:var(--text-dim); font-size:.9rem;">
+          Já tem conta? <button type="button" id="goToLogin" class="link-button">Entrar</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/pages/login.js"></script>
+</body>
+</html>
