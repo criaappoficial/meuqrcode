@@ -26,7 +26,34 @@ const els = {
 let selectedDocId = null;
 let currentUserId = null;
 
-observeAuth((user) => { currentUserId = user?.uid || null; loadDashboard(); }, () => window.location.replace('../index.html'));
+observeAuth((user) => {
+  currentUserId = user?.uid || null;
+  const hour = new Date().getHours();
+  const saudacao = (hour >= 5 && hour < 12) ? 'Bom dia' : (hour >= 12 && hour < 18) ? 'Boa tarde' : 'Boa noite';
+  const shortName = (() => {
+    const dn = (user?.displayName || '').trim();
+    if (dn) return dn.split(/\s+/)[0];
+    const em = (user?.email || '').split('@')[0];
+    if (em) return (em.split('.')[0] || em);
+    return 'Usuário';
+  })();
+  const greetingText = `Olá, ${shortName}! ${saudacao}`;
+  const greetingEl = document.getElementById('greeting');
+  if (greetingEl) greetingEl.textContent = greetingText;
+  const taglineEl = document.getElementById('dashboardTagline');
+  if (taglineEl) taglineEl.textContent = greetingText;
+  const badge = document.querySelector('.brand-badge');
+  if (badge) {
+    const initials = (() => {
+      const display = user?.displayName || '';
+      if (display.trim()) return display.trim().split(/\s+/).slice(0, 2).map(s => s[0]?.toUpperCase() || '').join('');
+      const email = (user?.email || '').split('@')[0];
+      return (email.slice(0, 2) || 'QR').toUpperCase();
+    })();
+    badge.textContent = initials || 'QR';
+  }
+  loadDashboard();
+}, () => window.location.replace('../index.html'));
 
 els.logoutBtn?.addEventListener('click', async () => {
   await logoutUser();
@@ -74,6 +101,22 @@ els.tableBody?.addEventListener('click', (event) => {
       .catch(console.error);
   }
 
+  if (target.dataset.action === 'print') {
+    if (!publicId) return;
+    const fixedUrl = target.dataset.fixedUrl;
+    const qrUrl = (BASE_URL === window.location.origin)
+      ? composeQrUrl(publicId)
+      : (fixedUrl || composeQrUrl(publicId));
+    drawQRCode('qrPreviewCanvas', qrUrl)
+      .then(() => {
+        const canvas = document.getElementById('qrPreviewCanvas');
+        if (!canvas) return;
+        const w = window.open('');
+        const img = canvas.toDataURL('image/png');
+        w.document.write(`<img src="${img}" style="width:100%;max-width:480px;" onload="window.print();window.close();"/>`);
+      })
+      .catch(console.error);
+  }
   
 });
 
@@ -127,6 +170,7 @@ async function loadDashboard() {
           <div class="actions">
             <button class="icon-button" title="Editar" data-action="edit" data-id="${qr.docId}" data-title="${qr.title}">✏️</button>
             <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">📥</button>
+            <button class="icon-button" title="Imprimir QR Code" data-action="print" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">🖨️</button>
             <button class="icon-button" title="Excluir" data-action="delete" data-id="${qr.docId}" data-title="${qr.title}">🗑</button>
           </div>
         </td>

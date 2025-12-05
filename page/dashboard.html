@@ -16,8 +16,9 @@
       <div class="brand">
         <div class="brand-badge">QR</div>
         <div>
-          <strong>QR Code Manager</strong>
-          <p style="color:var(--text-dim); font-size:.9rem;">Gerencie destinos e status em tempo real.</p>
+          <strong id="appTitle">QR Code Manager</strong>
+          
+          <p id="greeting" style="color:var(--text-dim); font-size:.75rem; margin-top: 5px;"></p>
         </div>
       </div>
       <div class="header-actions">
@@ -29,6 +30,7 @@
     <section class="card">
       <div class="card-header">
         <h2 class="card-title">Coleção de QR Codes</h2>
+        <p id="dashboardTagline" style="color:var(--text-dim);"></p>
       </div>
       <div id="alert-container"></div>
       <div id="loading" class="text-center" style="padding:2rem;">
@@ -74,20 +76,21 @@
     </div>
   </div>
 
-  <div id="qrPreviewModal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Pré-visualização do QR Code</h3>
-        <button class="modal-close" id="closeQrPreview">×</button>
+      <div id="qrPreviewModal" class="modal-overlay hidden">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title">Pré-visualização do QR Code</h3>
+            <button class="modal-close" id="closeQrPreview">×</button>
+          </div>
+          <div class="modal-body" style="text-align:center;">
+            <canvas id="qrPreviewCanvas"></canvas>
+            <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
+              <small id="qrPreviewUrl"></small>
+            </p>
+            <!-- button class="btn btn-secondary" id="printQrFromModal" style="margin-top: 1rem;">🖨️ Imprimir</button -->
+          </div>
+        </div>
       </div>
-      <div class="modal-body" style="text-align:center;">
-        <canvas id="qrPreviewCanvas"></canvas>
-        <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
-          <small id="qrPreviewUrl"></small>
-        </p>
-      </div>
-    </div>
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script type="module" src="../assets/js/pages/dashboard.js"></script>
