@@ -31,7 +31,8 @@ const els = {
 let currentRecord = null;
 if (!docId) window.location.replace('dashboard.html');
 
-observeAuth(() => init(), () => window.location.replace('../index.html'));
+let currentUserId = null;
+observeAuth((user) => { currentUserId = user?.uid || null; init(); }, () => window.location.replace('../index.html'));
 
 async function init() {
   try {
@@ -40,6 +41,15 @@ async function init() {
       showAlert(els.alert, 'QR Code não encontrado.', 'error');
       setTimeout(() => window.location.replace('dashboard.html'), 1500);
       return;
+    }
+    if (data.ownerId && currentUserId && data.ownerId !== currentUserId) {
+      showAlert(els.alert, 'Você não tem permissão para editar este QR Code.', 'error');
+      setTimeout(() => window.location.replace('dashboard.html'), 1500);
+      return;
+    }
+    if (!data.ownerId && currentUserId) {
+      await QRController.update(docId, { ownerId: currentUserId });
+      data.ownerId = currentUserId;
     }
     currentRecord = data;
     els.form.title.value = data.title;

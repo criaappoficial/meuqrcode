@@ -24,8 +24,9 @@ const els = {
 };
 
 let selectedDocId = null;
+let currentUserId = null;
 
-observeAuth(loadDashboard, () => window.location.replace('../index.html'));
+observeAuth((user) => { currentUserId = user?.uid || null; loadDashboard(); }, () => window.location.replace('../index.html'));
 
 els.logoutBtn?.addEventListener('click', async () => {
   await logoutUser();
@@ -72,6 +73,8 @@ els.tableBody?.addEventListener('click', (event) => {
       .then(() => downloadQRCode('qrPreviewCanvas', filename))
       .catch(console.error);
   }
+
+  
 });
 
 els.confirmDelete?.addEventListener('click', async () => {
@@ -99,7 +102,7 @@ document.getElementById('closeQrPreview')?.addEventListener('click', () => toggl
 async function loadDashboard() {
   try {
     toggleState(els.loading, true);
-    const qrCodes = await QRController.all();
+    const qrCodes = currentUserId ? await QRController.mine(currentUserId) : [];
     toggleState(els.loading, false);
 
     if (!qrCodes.length) {

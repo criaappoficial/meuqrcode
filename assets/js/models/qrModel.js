@@ -23,7 +23,7 @@ const slugify = (value) =>
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9\-]/g, '');
 
-export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl }) {
+export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl, ownerId }) {
   const id = slugify(fixedId) || slugify(title) || `link-${Date.now()}`;
   const docId = id.replace(/\//g, '__');
   const payload = {
@@ -32,6 +32,7 @@ export async function createQRCodeRecord({ title, destination, active = true, id
     title,
     destination,
     active,
+    ownerId: ownerId || null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
@@ -40,14 +41,14 @@ export async function createQRCodeRecord({ title, destination, active = true, id
   return payload;
 }
 
-export async function updateQRCodeRecord(docId, { title, destination, active }) {
+export async function updateQRCodeRecord(docId, { title, destination, active, ownerId }) {
   const ref = doc(db, 'qrcodes', docId);
-  await updateDoc(ref, {
-    title,
-    destination,
-    active,
-    updatedAt: serverTimestamp()
-  });
+  const payload = { updatedAt: serverTimestamp() };
+  if (typeof title !== 'undefined') payload.title = title;
+  if (typeof destination !== 'undefined') payload.destination = destination;
+  if (typeof active !== 'undefined') payload.active = active;
+  if (typeof ownerId !== 'undefined') payload.ownerId = ownerId;
+  await updateDoc(ref, payload);
   return true;
 }
 
@@ -74,5 +75,10 @@ export async function getQRCodeRecordByPublicId(id) {
 
 export async function listQRCodes() {
   const snapshot = await getDocs(query(qrCollection, orderBy('createdAt', 'desc')));
+  return snapshot.docs.map((docSnap) => ({ docId: docSnap.id, ...docSnap.data() }));
+}
+
+export async function listQRCodesByOwner(ownerId) {
+  const snapshot = await getDocs(query(qrCollection, where('ownerId', '==', ownerId)));
   return snapshot.docs.map((docSnap) => ({ docId: docSnap.id, ...docSnap.data() }));
 }

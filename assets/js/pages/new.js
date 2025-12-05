@@ -16,7 +16,8 @@ const qrUrlText = document.getElementById('qrUrl');
 const fixedUserInput = document.getElementById('fixedUser');
 const fixedSlugInput = document.getElementById('fixedSlug');
 
-observeAuth(null, () => window.location.replace('../index.html'));
+let currentUserId = null;
+observeAuth((user) => { currentUserId = user?.uid || null; }, () => window.location.replace('../index.html'));
 
 const toSlug = (value) =>
   (value || '')
@@ -57,7 +58,7 @@ form?.addEventListener('submit', async (event) => {
   submitBtn.innerHTML = '<span class="loading"></span> Gerando...';
 
   try {
-    const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave });
+    const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave, ownerId: currentUserId });
     const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(created.id)
       : (created.fixedUrl || composeQrUrl(created.id));
