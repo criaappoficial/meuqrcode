@@ -4,7 +4,8 @@ import {
   deleteQRCodeRecord,
   getQRCodeRecord,
   getQRCodeRecordByPublicId,
-  listQRCodes
+  listQRCodes,
+  listQRCodesByOwner
 } from '../models/qrModel.js';
 
 export const QRController = {
@@ -13,7 +14,8 @@ export const QRController = {
   remove: (docId) => deleteQRCodeRecord(docId),
   find: (docId) => getQRCodeRecord(docId),
   findByPublicId: (id) => getQRCodeRecordByPublicId(id),
-  all: () => listQRCodes()
+  all: () => listQRCodes(),
+  mine: (ownerId) => listQRCodesByOwner(ownerId)
 };
 
 export function drawQRCode(canvasId, value) {

@@ -14,14 +14,16 @@ if (!id) {
   id = path || null;
 }
 
-const sections = {
-  loading: document.getElementById('loading'),
-  inactive: document.getElementById('inactive'),
-  notfound: document.getElementById('notfound'),
-  error: document.getElementById('error')
-};
+// UI removida: redireciona silenciosamente sem mostrar estado visual
 
 (async function resolveQRCode() {
+  const sections = {
+    loading: document.getElementById('loading'),
+    inactive: document.getElementById('inactive'),
+    notfound: document.getElementById('notfound'),
+    error: document.getElementById('error')
+  };
+
   if (!id) {
     toggleState(sections.notfound, true);
     return;

@@ -16,7 +16,32 @@ const qrUrlText = document.getElementById('qrUrl');
 const fixedUserInput = document.getElementById('fixedUser');
 const fixedSlugInput = document.getElementById('fixedSlug');
 
-observeAuth(null, () => window.location.replace('../index.html'));
+let currentUserId = null;
+observeAuth((user) => {
+  currentUserId = user?.uid || null;
+  const hour = new Date().getHours();
+  const saudacao = (hour >= 5 && hour < 12) ? 'Bom dia' : (hour >= 12 && hour < 18) ? 'Boa tarde' : 'Boa noite';
+  const shortName = (() => {
+    const dn = (user?.displayName || '').trim();
+    if (dn) return dn.split(/\s+/)[0];
+    const em = (user?.email || '').split('@')[0];
+    if (em) return (em.split('.')[0] || em);
+    return 'Usuário';
+  })();
+  const greetingText = `Olá, ${shortName}! ${saudacao}`;
+  const greetingEl = document.getElementById('greeting');
+  if (greetingEl) greetingEl.textContent = greetingText;
+  const badge = document.querySelector('.brand-badge');
+  if (badge) {
+    const initials = (() => {
+      const display = user?.displayName || '';
+      if (display.trim()) return display.trim().split(/\s+/).slice(0, 2).map(s => s[0]?.toUpperCase() || '').join('');
+      const email = (user?.email || '').split('@')[0];
+      return (email.slice(0, 2) || 'QR').toUpperCase();
+    })();
+    badge.textContent = initials || 'QR';
+  }
+}, () => window.location.replace('../index.html'));
 
 const toSlug = (value) =>
   (value || '')
@@ -57,7 +82,7 @@ form?.addEventListener('submit', async (event) => {
   submitBtn.innerHTML = '<span class="loading"></span> Gerando...';
 
   try {
-    const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave });
+    const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave, ownerId: currentUserId });
     const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(created.id)
       : (created.fixedUrl || composeQrUrl(created.id));
