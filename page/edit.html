@@ -36,14 +36,31 @@
         <p style="color:var(--text-dim);">Buscando QR Code...</p>
       </div>
 
-      <form id="qrForm" class="hidden">
+      <form id="qrForm" class="hidden" novalidate>
         <div class="form-group">
           <label for="title">Título *</label>
           <input id="title" name="title" type="text" required />
         </div>
         <div class="form-group">
+          <label for="contentType">Tipo de conteúdo</label>
+          <select id="contentType" name="contentType">
+            <option value="text">Texto/Link</option>
+            <option value="pix">PIX</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="destination">Destino *</label>
           <input id="destination" name="destination" type="text" required />
+        </div>
+        <div id="pixFields" class="hidden">
+          <div class="form-group">
+            <label for="pixKey">Chave PIX *</label>
+            <input id="pixKey" name="pixKey" type="text" placeholder="EVP, e-mail, telefone, CPF/CNPJ" />
+          </div>
+          <div class="form-group">
+            <label for="amount">Valor (opcional)</label>
+            <input id="amount" name="amount" type="number" step="0.01" placeholder="0.00" />
+          </div>
         </div>
         <div class="form-group">
           <label class="checkbox-inline">
