@@ -58,16 +58,32 @@ async function init() {
     if (isPix) {
       els.contentType.value = 'pix';
       els.pixFields.classList.remove('hidden');
-      document.getElementById('destination').required = false;
-      document.querySelector('#destination').parentElement.classList.add('hidden');
+      const destInput = document.getElementById('destination');
+      const destGroup = document.querySelector('#destination').parentElement;
+      destInput.required = true;
+      destGroup.classList.remove('hidden');
+      const destLabel = destGroup.querySelector('label');
+      if (destLabel) destLabel.textContent = 'Chave PIX *';
+      destInput.placeholder = 'EVP, e-mail, telefone, CPF/CNPJ';
       const parsed = parsePix(dest);
-      els.pixKey.value = parsed.pixKey || '';
+      // usar o campo Destino como chave PIX para evitar confusão
+      els.form.destination.value = parsed.pixKey || '';
+      // esconder campo específico de chave PIX
+      const pixKeyGroup = document.getElementById('pixKey')?.parentElement;
+      if (pixKeyGroup) pixKeyGroup.classList.add('hidden');
       els.amount.value = parsed.amount || '';
     } else {
       els.contentType.value = 'text';
       els.pixFields.classList.add('hidden');
-      document.getElementById('destination').required = true;
-      document.querySelector('#destination').parentElement.classList.remove('hidden');
+      const destInput = document.getElementById('destination');
+      const destGroup = document.querySelector('#destination').parentElement;
+      destInput.required = true;
+      destGroup.classList.remove('hidden');
+      const destLabel = destGroup.querySelector('label');
+      if (destLabel) destLabel.textContent = 'Destino *';
+      destInput.placeholder = '';
+      const pixKeyGroup = document.getElementById('pixKey')?.parentElement;
+      if (pixKeyGroup) pixKeyGroup.classList.remove('hidden');
     }
     els.loading.classList.add('hidden');
     els.form.classList.remove('hidden');
@@ -84,7 +100,7 @@ els.form?.addEventListener('submit', async (event) => {
   if (isPix) {
     const current = parsePix((currentRecord?.destination || '').trim());
     const newPayload = buildPixPayload({
-      pixKey: els.pixKey.value || current.pixKey || '',
+      pixKey: destination || current.pixKey || '',
       merchantName: current.merchantName || 'RECEBEDOR',
       merchantCity: current.merchantCity || 'CIDADE',
       amount: els.amount.value || current.amount || '',
@@ -132,8 +148,21 @@ els.contentType?.addEventListener('change', () => {
   const isPix = els.contentType.value === 'pix';
   els.pixFields.classList[isPix ? 'remove' : 'add']('hidden');
   const destInput = document.getElementById('destination');
-  destInput.required = !isPix;
-  destInput.parentElement.classList[isPix ? 'add' : 'remove']('hidden');
+  destInput.required = true;
+  const destGroup = destInput.parentElement;
+  destGroup.classList.remove('hidden');
+  const destLabel = destGroup.querySelector('label');
+  if (isPix) {
+    if (destLabel) destLabel.textContent = 'Chave PIX *';
+    destInput.placeholder = 'EVP, e-mail, telefone, CPF/CNPJ';
+    const pixKeyGroup = document.getElementById('pixKey')?.parentElement;
+    if (pixKeyGroup) pixKeyGroup.classList.add('hidden');
+  } else {
+    if (destLabel) destLabel.textContent = 'Destino *';
+    destInput.placeholder = '';
+    const pixKeyGroup = document.getElementById('pixKey')?.parentElement;
+    if (pixKeyGroup) pixKeyGroup.classList.remove('hidden');
+  }
 });
 
 function pad(n) { return n.toString().padStart(2, '0'); }
