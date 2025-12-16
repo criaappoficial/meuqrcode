@@ -208,10 +208,16 @@
             background: linear-gradient(135deg, var(--primary-color) 0%, #283593 100%);
             color: white;
             padding: 150px 0 100px;
-            margin-top: 80px;
+            margin-top: 0;
             text-align: center;
             position: relative;
             overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding-top: 100px; /* Compensate for header */
         }
         
         .hero:before {
