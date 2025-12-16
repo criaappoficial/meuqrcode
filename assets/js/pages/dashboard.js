@@ -53,11 +53,11 @@ observeAuth((user) => {
     badge.textContent = initials || 'QR';
   }
   loadDashboard();
-}, () => window.location.replace('../index.html'));
+}, () => window.location.replace('../login.html'));
 
 els.logoutBtn?.addEventListener('click', async () => {
   await logoutUser();
-  window.location.replace('../index.html');
+  window.location.replace('../login.html');
 });
 
 els.tableBody?.addEventListener('click', (event) => {
@@ -81,22 +81,26 @@ els.tableBody?.addEventListener('click', (event) => {
   if (target.dataset.action === 'preview') {
     if (!publicId) return;
     const fixedUrl = target.dataset.fixedUrl;
-    const qrUrl = (BASE_URL === window.location.origin)
-      ? composeQrUrl(publicId)
-      : (fixedUrl || composeQrUrl(publicId));
-    els.qrPreviewUrl.textContent = qrUrl;
+    const dest = target.dataset.destination || '';
+    const isPix = /^000201/.test(dest) && /br\.gov\.bcb\.pix/.test(dest);
+    const qrValue = isPix
+      ? dest
+      : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
+    els.qrPreviewUrl.textContent = qrValue;
     toggleState(els.qrPreviewModal, true);
-    drawQRCode('qrPreviewCanvas', qrUrl).catch(console.error);
+    drawQRCode('qrPreviewCanvas', qrValue).catch(console.error);
   }
 
   if (target.dataset.action === 'download') {
     if (!publicId) return;
     const fixedUrl = target.dataset.fixedUrl;
-    const qrUrl = (BASE_URL === window.location.origin)
-      ? composeQrUrl(publicId)
-      : (fixedUrl || composeQrUrl(publicId));
+    const dest = target.dataset.destination || '';
+    const isPix = /^000201/.test(dest) && /br\.gov\.bcb\.pix/.test(dest);
+    const qrValue = isPix
+      ? dest
+      : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
     const filename = `${(title || 'qrcode').replace(/\s+/g, '-').toLowerCase()}-${publicId}.png`;
-    drawQRCode('qrPreviewCanvas', qrUrl)
+    drawQRCode('qrPreviewCanvas', qrValue)
       .then(() => downloadQRCode('qrPreviewCanvas', filename))
       .catch(console.error);
   }
@@ -104,10 +108,12 @@ els.tableBody?.addEventListener('click', (event) => {
   if (target.dataset.action === 'print') {
     if (!publicId) return;
     const fixedUrl = target.dataset.fixedUrl;
-    const qrUrl = (BASE_URL === window.location.origin)
-      ? composeQrUrl(publicId)
-      : (fixedUrl || composeQrUrl(publicId));
-    drawQRCode('qrPreviewCanvas', qrUrl)
+    const dest = target.dataset.destination || '';
+    const isPix = /^000201/.test(dest) && /br\.gov\.bcb\.pix/.test(dest);
+    const qrValue = isPix
+      ? dest
+      : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
+    drawQRCode('qrPreviewCanvas', qrValue)
       .then(() => {
         const canvas = document.getElementById('qrPreviewCanvas');
         if (!canvas) return;
