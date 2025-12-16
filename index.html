@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.png"
     <title>Cages GR | QR Codes Dinâmicos & PIX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -207,10 +208,16 @@
             background: linear-gradient(135deg, var(--primary-color) 0%, #283593 100%);
             color: white;
             padding: 150px 0 100px;
-            margin-top: 80px;
+            margin-top: 0;
             text-align: center;
             position: relative;
             overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding-top: 100px; /* Compensate for header */
         }
         
         .hero:before {

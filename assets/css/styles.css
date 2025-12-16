@@ -68,6 +68,10 @@ header {
   cursor: pointer;
 }
 
+.brand-badge i {
+  font-size: 1.8rem;
+}
+
 .header-actions {
   display: flex;
   gap: 1.25rem;
