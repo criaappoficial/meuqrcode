@@ -23,6 +23,11 @@ observeAuth(
   () => {}
 );
 
+document.querySelector('.brand-badge')?.addEventListener('click', () => {
+  window.location.href = 'index.html';
+});
+
+
 loginForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
   const email = loginForm.email.value;

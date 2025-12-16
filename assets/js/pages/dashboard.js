@@ -53,11 +53,11 @@ observeAuth((user) => {
     badge.textContent = initials || 'QR';
   }
   loadDashboard();
-}, () => window.location.replace('../index.html'));
+}, () => window.location.replace('../login.html'));
 
 els.logoutBtn?.addEventListener('click', async () => {
   await logoutUser();
-  window.location.replace('../index.html');
+  window.location.replace('../login.html');
 });
 
 els.tableBody?.addEventListener('click', (event) => {

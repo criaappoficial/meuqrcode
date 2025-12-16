@@ -65,6 +65,7 @@ header {
   font-weight: 700;
   letter-spacing: 1px;
   box-shadow: 0 20px 30px rgba(92,106,196,.3);
+  cursor: pointer;
 }
 
 .header-actions {

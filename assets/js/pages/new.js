@@ -52,7 +52,7 @@ observeAuth((user) => {
     })();
     badge.textContent = initials || 'QR';
   }
-}, () => window.location.replace('../index.html'));
+}, () => window.location.replace('../login.html'));
 
 const toSlug = (value) =>
   (value || '')

@@ -30,7 +30,7 @@ let currentRecord = null;
 if (!docId) window.location.replace('dashboard.html');
 
 let currentUserId = null;
-observeAuth((user) => { currentUserId = user?.uid || null; init(); }, () => window.location.replace('../index.html'));
+observeAuth((user) => { currentUserId = user?.uid || null; init(); }, () => window.location.replace('../login.html'));
 
 async function init() {
   try {
