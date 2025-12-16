@@ -264,16 +264,49 @@
             right: auto;
             bottom: auto;
             margin: 40px auto 0;
-            width: min(280px, 65vw);
+            width: min(320px, 85vw);
             height: auto;
             background: white;
             border-radius: 12px;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 1;
+            text-align: center;
+        }
+        
+        .donation-text {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .pix-key-container {
+            margin-top: 10px;
+            background: #f0f2f5;
+            padding: 10px;
+            border-radius: 8px;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        .pix-key-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .pix-key-value {
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.85rem;
         }
         
         .hero-qr-preview img {
@@ -741,7 +774,14 @@
             </div>
             
             <div class="hero-qr-preview">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://wa.me/5582996703421&color=1a237e&bgcolor=ffffff" alt="QR Code WhatsApp">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=00020126580014br.gov.bcb.pix01363bb0e547-a5ec-45a2-a6a0-336a470b4fb252040000530398654041.005802BR5909MEUQRCODE6006BRASIL62070503***63042913&color=1a237e&bgcolor=ffffff" alt="QR Code Pix Doação">
+                <div class="donation-text">
+                    Como a ferramenta é gratuita, nos ajude com apenas 1 real de pix para manter a solução.
+                </div>
+                <div class="pix-key-container">
+                    <div class="pix-key-label">Chave PIX</div>
+                    <div class="pix-key-value">3bb0e547-a5ec-45a2-a6a0-336a470b4fb2</div>
+                </div>
             </div>
         </div>
     </section>
