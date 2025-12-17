@@ -134,6 +134,12 @@ header {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.table-container::-webkit-scrollbar {
+  display: none;
 }
 
 table {
