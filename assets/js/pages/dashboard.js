@@ -62,6 +62,7 @@ const showDashboard = () => {
 };
 
 const showNewQr = () => {
+  selectedDocId = null; // Clear edit mode
   els.dashboardView.classList.add('hidden');
   els.newQrView.classList.remove('hidden');
   // Reset form
@@ -70,6 +71,13 @@ const showNewQr = () => {
   els.form.classList.remove('hidden');
   els.submitBtn.disabled = false;
   els.submitBtn.textContent = 'Criar QR Code';
+  const headerTitle = els.newQrView.querySelector('.card-title');
+  if (headerTitle) headerTitle.textContent = 'Novo QR Code';
+  
+  // Enable fixed ID fields
+  if (els.fixedUser) els.fixedUser.disabled = false;
+  if (els.fixedSlug) els.fixedSlug.disabled = false;
+
   // Trigger content type change to set visibility correct
   els.contentType.dispatchEvent(new Event('change'));
 };
@@ -195,74 +203,93 @@ els.form?.addEventListener('submit', async (event) => {
   }
   if (isPix) {
     if (!els.pixKey?.value || !els.merchantName?.value || !els.merchantCity?.value) {
-      showAlert(els.alert, 'Preencha chave, nome e cidade para PIX.', 'error');
-      return;
+       showAlert(els.alert, 'Preencha chave, nome e cidade para PIX.', 'error');
+       return;
     }
   }
 
-  const userPartRaw = toSlug(els.fixedUser?.value) || 'meus-servicos';
-  const rawSlug = els.fixedSlug?.value || '';
-  const isUrlLike = /^https?:/i.test(rawSlug) || rawSlug.includes('.');
-  const slugPartRaw = isUrlLike ? '' : toSlug(rawSlug);
-  const userPart = userPartRaw.replace(/-/g, '');
-  const fixedId = slugPartRaw ? slugPartRaw : `${userPart}${uniqueSuffix()}`;
-  const fixedUrlForSave = `${PRIMARY_DOMAIN}/${fixedId}`;
+  // ID Logic only for CREATE
+  let fixedId = null;
+  let fixedUrlForSave = null;
+
+  if (!selectedDocId) {
+    const userPartRaw = toSlug(els.fixedUser?.value) || 'meus-servicos';
+    const rawSlug = els.fixedSlug?.value || '';
+    const isUrlLike = /^https?:/i.test(rawSlug) || rawSlug.includes('.');
+    const slugPartRaw = isUrlLike ? '' : toSlug(rawSlug);
+    const userPart = userPartRaw.replace(/-/g, '');
+    fixedId = slugPartRaw ? slugPartRaw : `${userPart}${uniqueSuffix()}`;
+    fixedUrlForSave = `${PRIMARY_DOMAIN}/${fixedId}`;
+  }
 
   els.submitBtn.disabled = true;
-  els.submitBtn.innerHTML = '<span class="loading"></span> Gerando...';
+  els.submitBtn.innerHTML = '<span class="loading"></span> Salvando...';
 
   try {
-    const destinationToSave = isPix ? buildPixPayload({
+    const pixDataObj = isPix ? {
       pixKey: els.pixKey.value,
       merchantName: els.merchantName.value,
       merchantCity: els.merchantCity.value,
       amount: els.amount.value,
       txid: els.txid.value,
       description: els.description.value
-    }) : destination;
-    
-  const isCustom = els.qrStyle.value === 'custom';
-  if (els.qrColor) {
-     els.qrColor.classList[isCustom ? 'remove' : 'add']('hidden');
-  }
-  const styleVal = isCustom ? (els.qrColor?.value || '#000000') : (els.qrStyle?.value || 'default');
+    } : null;
 
-  const created = await QRController.create({ 
-      title, 
-      destination: destinationToSave, 
-      active, 
-      id: fixedId, 
-      fixedUrl: fixedUrlForSave, 
-      ownerId: currentUserId,
-      style: styleVal
-    });
+    const destinationToSave = isPix ? buildPixPayload(pixDataObj) : destination;
+    
+    const isCustom = els.qrStyle.value === 'custom';
+    if (els.qrColor) {
+       els.qrColor.classList[isCustom ? 'remove' : 'add']('hidden');
+    }
+    const styleVal = isCustom ? (els.qrColor?.value || '#000000') : (els.qrStyle?.value || 'default');
+
+    let resultItem;
+    if (selectedDocId) {
+        // UPDATE
+        await QRController.update(selectedDocId, {
+            title,
+            destination: destinationToSave,
+            active,
+            ownerId: currentUserId,
+            style: styleVal,
+            pixData: pixDataObj
+        });
+        // Retrieve updated item to show preview correctly
+        resultItem = await QRController.find(selectedDocId);
+        showAlert(els.alert, 'QR Code atualizado com sucesso!', 'success');
+    } else {
+        // CREATE
+        resultItem = await QRController.create({ 
+            title, 
+            destination: destinationToSave, 
+            active, 
+            id: fixedId, 
+            fixedUrl: fixedUrlForSave, 
+            ownerId: currentUserId,
+            style: styleVal,
+            pixData: pixDataObj
+        });
+        showAlert(els.alert, 'QR Code criado com sucesso!', 'success');
+    }
     
     const displayUrl = (BASE_URL === window.location.origin)
-      ? composeQrUrl(created.id)
-      : (created.fixedUrl || composeQrUrl(created.id));
+      ? composeQrUrl(resultItem.id)
+      : (resultItem.fixedUrl || composeQrUrl(resultItem.id));
       
     const format = (els.qrFormat?.value || 'png');
-    const pixPayload = isPix ? buildPixPayload({
-      pixKey: els.pixKey.value,
-      merchantName: els.merchantName.value,
-      merchantCity: els.merchantCity.value,
-      amount: els.amount.value,
-      txid: els.txid.value,
-      description: els.description.value
-    }) : null;
+    // Use the saved destination as the value for QR (PIX payload or URL)
+    const valueForQr = isPix ? destinationToSave : (resultItem.fixedUrl || composeQrUrl(resultItem.id));
     
-    const valueForQr = isPix ? pixPayload : (created.fixedUrl || composeQrUrl(created.id));
-    
-    if (els.qrUrl) els.qrUrl.textContent = isPix ? pixPayload : displayUrl;
+    if (els.qrUrl) els.qrUrl.textContent = isPix ? destinationToSave : displayUrl;
     await drawStyledQR(valueForQr, styleVal, format);
     
     els.preview.classList.remove('hidden');
     els.form.classList.add('hidden');
-    showAlert(els.alert, 'QR Code criado com sucesso!', 'success');
+    
   } catch (error) {
-    showAlert(els.alert, 'Erro ao criar QR Code.', 'error');
+    showAlert(els.alert, 'Erro ao salvar QR Code.', 'error');
     els.submitBtn.disabled = false;
-    els.submitBtn.textContent = 'Criar QR Code';
+    els.submitBtn.textContent = selectedDocId ? 'Salvar Alterações' : 'Criar QR Code';
     console.error(error);
   }
 });
@@ -344,7 +371,7 @@ if (savedSidebarState === 'collapsed' && sidebar && mainContent) {
     mainContent.classList.add('expanded');
 }
 
-els.tableBody?.addEventListener('click', (event) => {
+els.tableBody?.addEventListener('click', async (event) => {
   const target = event.target.closest('[data-action]');
   if (!target) return;
   const docId = target.dataset.id;
@@ -353,7 +380,86 @@ els.tableBody?.addEventListener('click', (event) => {
   const publicId = target.dataset.publicId;
 
   if (target.dataset.action === 'edit') {
-    window.location.href = `edit.html?id=${docId}`;
+    const item = await QRController.find(docId);
+    if (!item) {
+        showAlert(els.alert, 'Item não encontrado para edição.', 'error');
+        return;
+    }
+
+    selectedDocId = docId;
+    showNewQr();
+    
+    // Update header title
+    const headerTitle = els.newQrView.querySelector('.card-title');
+    if (headerTitle) headerTitle.textContent = 'Editar QR Code';
+    els.submitBtn.textContent = 'Salvar Alterações';
+
+    // Populate fields
+    if (els.form.title) els.form.title.value = item.title || '';
+    if (els.form.active) els.form.active.checked = !!item.active;
+    
+    const dest = item.destination || '';
+    const isPix = /^000201/.test(dest) && /br\.gov\.bcb\.pix/.test(dest);
+    
+    if (els.contentType) {
+      els.contentType.value = isPix ? 'pix' : 'text';
+      els.contentType.dispatchEvent(new Event('change'));
+    }
+
+    if (isPix) {
+        if (item.pixData) {
+            if (els.pixKey) els.pixKey.value = item.pixData.pixKey || '';
+            if (els.merchantName) els.merchantName.value = item.pixData.merchantName || '';
+            if (els.merchantCity) els.merchantCity.value = item.pixData.merchantCity || '';
+            if (els.amount) els.amount.value = item.pixData.amount || '';
+            if (els.txid) els.txid.value = item.pixData.txid || '';
+            if (els.description) els.description.value = item.pixData.description || '';
+        }
+    } else {
+       if (els.form.destination) els.form.destination.value = dest;
+    }
+
+    // Populate Style
+    let styleVal = 'default';
+    if (els.qrStyle) {
+      const savedStyle = item.style || 'default';
+      styleVal = savedStyle;
+      if (savedStyle.startsWith('#')) {
+         els.qrStyle.value = 'custom';
+         if (els.qrColor) {
+             els.qrColor.value = savedStyle;
+             els.qrColor.classList.remove('hidden');
+         }
+      } else {
+         els.qrStyle.value = savedStyle;
+         if (els.qrColor) els.qrColor.classList.add('hidden');
+      }
+      els.qrStyle.dispatchEvent(new Event('change'));
+    }
+    
+    // Fixed URL Fields (Disable/Populate)
+    if (els.fixedUser) els.fixedUser.disabled = true;
+    if (els.fixedSlug) {
+        els.fixedSlug.disabled = true;
+        els.fixedSlug.value = item.id || '';
+    }
+
+    // DRAW PREVIEW IMMEDIATELY
+    const displayUrl = (BASE_URL === window.location.origin)
+      ? composeQrUrl(item.id)
+      : (item.fixedUrl || composeQrUrl(item.id));
+    
+    // Determine the value to draw (PIX payload or URL)
+    const valueForQr = isPix ? dest : (item.fixedUrl || composeQrUrl(item.id));
+
+    if (els.qrUrl) els.qrUrl.textContent = isPix ? dest : displayUrl;
+    
+    // Draw
+    const format = (els.qrFormat?.value || 'png');
+    await drawStyledQR(valueForQr, styleVal, format);
+    els.preview.classList.remove('hidden');
+
+    return;
   }
 
   if (target.dataset.action === 'delete') {
@@ -366,25 +472,56 @@ els.tableBody?.addEventListener('click', (event) => {
     if (!publicId) return;
     const fixedUrl = target.dataset.fixedUrl;
     const dest = target.dataset.destination || '';
+    const style = target.dataset.style || 'default';
     const isPix = /^000201/.test(dest) && /br\.gov\.bcb\.pix/.test(dest);
     const qrValue = isPix
       ? dest
       : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
     els.qrPreviewUrl.textContent = qrValue;
     toggleState(els.qrPreviewModal, true);
-    drawQRCode('qrPreviewCanvas', qrValue).catch(console.error);
+    // Prepare options manually to target qrPreviewCanvas
+    const optionsByStyle = {
+        default: { color: { dark: '#050814', light: '#FFFFFF' } },
+        dark: { color: { dark: '#000000', light: '#FFFFFF' } },
+        light: { color: { dark: '#333333', light: '#FAFAFA' } },
+        blue: { color: { dark: '#1f4ed8', light: '#FFFFFF' } }
+    };
+    let opts;
+    if (style && style.startsWith('#')) {
+        opts = { color: { dark: style, light: '#FFFFFF' } };
+    } else {
+        opts = optionsByStyle[style] || optionsByStyle.default;
+    }
+    
+    drawQRCode('qrPreviewCanvas', qrValue, opts).catch(console.error);
   }
 
   if (target.dataset.action === 'download') {
     if (!publicId) return;
     const fixedUrl = target.dataset.fixedUrl;
     const dest = target.dataset.destination || '';
+    const style = target.dataset.style || 'default';
     const isPix = /^000201/.test(dest) && /br\.gov\.bcb\.pix/.test(dest);
     const qrValue = isPix
       ? dest
       : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
     const filename = `${(title || 'qrcode').replace(/\s+/g, '-').toLowerCase()}-${publicId}.png`;
-    drawQRCode('qrPreviewCanvas', qrValue)
+    
+    // Style logic again
+    const optionsByStyle = {
+        default: { color: { dark: '#050814', light: '#FFFFFF' } },
+        dark: { color: { dark: '#000000', light: '#FFFFFF' } },
+        light: { color: { dark: '#333333', light: '#FAFAFA' } },
+        blue: { color: { dark: '#1f4ed8', light: '#FFFFFF' } }
+    };
+    let opts;
+    if (style && style.startsWith('#')) {
+        opts = { color: { dark: style, light: '#FFFFFF' } };
+    } else {
+        opts = optionsByStyle[style] || optionsByStyle.default;
+    }
+
+    drawQRCode('qrPreviewCanvas', qrValue, opts)
       .then(() => downloadQRCode('qrPreviewCanvas', filename))
       .catch(console.error);
   }
@@ -393,11 +530,27 @@ els.tableBody?.addEventListener('click', (event) => {
     if (!publicId) return;
     const fixedUrl = target.dataset.fixedUrl;
     const dest = target.dataset.destination || '';
+    const style = target.dataset.style || 'default';
     const isPix = /^000201/.test(dest) && /br\.gov\.bcb\.pix/.test(dest);
     const qrValue = isPix
       ? dest
       : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
-    drawQRCode('qrPreviewCanvas', qrValue)
+      
+    // Style logic again
+    const optionsByStyle = {
+        default: { color: { dark: '#050814', light: '#FFFFFF' } },
+        dark: { color: { dark: '#000000', light: '#FFFFFF' } },
+        light: { color: { dark: '#333333', light: '#FAFAFA' } },
+        blue: { color: { dark: '#1f4ed8', light: '#FFFFFF' } }
+    };
+    let opts;
+    if (style && style.startsWith('#')) {
+        opts = { color: { dark: style, light: '#FFFFFF' } };
+    } else {
+        opts = optionsByStyle[style] || optionsByStyle.default;
+    }
+
+    drawQRCode('qrPreviewCanvas', qrValue, opts)
       .then(() => {
         const canvas = document.getElementById('qrPreviewCanvas');
         if (!canvas) return;
@@ -454,7 +607,7 @@ async function loadDashboard() {
         <td>${qr.title || 'Sem título'}</td>
         <td class="col-destination"><a href="${qr.destination}" target="_blank">${truncate(qr.destination)}</a></td>
         <td class="col-qr">
-          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">
+          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}" data-style="${qr.style || 'default'}">
             <i class="fas fa-eye"></i>
           </button>
         </td>
@@ -464,10 +617,10 @@ async function loadDashboard() {
             <button class="icon-button" title="Editar" data-action="edit" data-id="${qr.docId}" data-title="${qr.title}">
               <i class="fas fa-edit"></i>
             </button>
-            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">
+            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}" data-style="${qr.style || 'default'}">
               <i class="fas fa-download"></i>
             </button>
-            <button class="icon-button" title="Imprimir QR Code" data-action="print" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">
+            <button class="icon-button" title="Imprimir QR Code" data-action="print" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}" data-style="${qr.style || 'default'}">
               <i class="fas fa-print"></i>
             </button>
             <button class="icon-button" title="Excluir" data-action="delete" data-id="${qr.docId}" data-title="${qr.title}">
