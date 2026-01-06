@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/styles.css?v=7" />
 </head>
 <body>
   <div class="app-layout">
@@ -18,10 +18,10 @@
       <div class="sidebar-brand">
         <i class="fas fa-qrcode"></i>
         <span>MeuQRCode</span>
-        <button id="toggleSidebarBtn" class="toggle-btn" title="Minimizar Menu">
-          <i class="fas fa-chevron-left"></i>
-        </button>
       </div>
+      <button id="toggleSidebarBtn" class="toggle-btn" title="Minimizar Menu">
+        <i class="fas fa-chevron-left"></i>
+      </button>
       
       <nav class="sidebar-nav">
         <ul>
@@ -32,7 +32,7 @@
             </a>
           </li>
           <li>
-            <a href="create-card.html">
+            <a href="coming-soon.html">
               <i class="fas fa-id-card"></i>
               <span>Criar Cartão</span>
             </a>
@@ -161,6 +161,20 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-  <script type="module" src="../assets/js/pages/dashboard.js?v=2"></script>
+  <script>
+    /* Restore sidebar state immediately to prevent FOUC */
+    (function() {
+      try {
+        var state = localStorage.getItem('sidebarState');
+        var sb = document.querySelector('.sidebar');
+        var mc = document.querySelector('.main-content');
+        if (state === 'collapsed' && sb && mc) {
+          sb.classList.add('collapsed');
+          mc.classList.add('expanded');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  <script type="module" src="../assets/js/pages/dashboard.js?v=7"></script>
 </body>
 </html>

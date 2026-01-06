@@ -87,13 +87,24 @@ if (mobileMenuBtn && sidebar) {
 const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
 const mainContent = document.querySelector('.main-content');
 if (toggleSidebarBtn && sidebar && mainContent) {
-    toggleSidebarBtn.addEventListener('click', () => {
+    toggleSidebarBtn.addEventListener('click', (e) => {
+        // Prevent event bubbling so it doesn't trigger navigation if inside an anchor (though it's a button now)
+        e.stopPropagation(); 
+        
         sidebar.classList.toggle('collapsed');
         mainContent.classList.toggle('expanded');
         
-        // Salvar preferência do usuário (opcional)
-        // localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        // Save preference
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
     });
+}
+
+// Restore sidebar state on load
+const savedSidebarState = localStorage.getItem('sidebarState');
+if (savedSidebarState === 'collapsed' && sidebar && mainContent) {
+    sidebar.classList.add('collapsed');
+    mainContent.classList.add('expanded');
 }
 
 els.tableBody?.addEventListener('click', (event) => {

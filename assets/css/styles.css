@@ -431,6 +431,7 @@ select:hover {
   z-index: 100;
   transition: width 0.3s ease, transform 0.3s ease;
   box-shadow: 4px 0 24px rgba(0,0,0,0.05);
+  overflow: visible; /* Allow toggle button to overlap */
 }
 
 .sidebar.collapsed {
@@ -441,16 +442,26 @@ select:hover {
   padding: 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start; /* Changed from space-between */
   gap: 1rem;
   font-size: 1.2rem;
   color: #fff;
   border-bottom: 1px solid rgba(255,255,255,0.05);
   height: 80px;
+  position: relative;
+  overflow: hidden; /* Hide text when it overflows during transition */
+  white-space: nowrap;
 }
 
 .sidebar.collapsed .sidebar-brand span {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  display: none; /* Force remove from layout so icon centers */
+}
+
+.sidebar.collapsed .sidebar-brand i {
+  font-size: 1.5rem; /* Make icon slightly larger when collapsed */
+  margin: 0;
 }
 
 .sidebar.collapsed .sidebar-brand {
@@ -459,33 +470,37 @@ select:hover {
 }
 
 .toggle-btn {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
+  position: absolute;
+  right: 0;
+  top: 40px; /* Exact center of 80px header */
+  width: 30px;
+  height: 30px;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #f8fafc;
   cursor: pointer;
-  font-size: 1rem;
-  padding: 0.5rem;
+  font-size: 0.8rem;
   border-radius: 50%;
-  transition: all 0.2s;
+  transform: translate(50%, -50%); /* Centered on the edge (50% right) and vertically (50% up) */
+  transition: transform 0.3s ease, background 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.sidebar.collapsed .toggle-btn {
-  position: absolute;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%) rotate(180deg);
-  background: #1e293b;
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 102;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .toggle-btn:hover {
-  color: #fff;
-  background: rgba(255,255,255,0.1);
+  background: #1e293b;
+  border-color: rgba(255,255,255,0.3);
 }
+
+.sidebar.collapsed .toggle-btn {
+  transform: translate(50%, -50%) rotate(180deg);
+}
+
+/* Remove old positioning rules */
+/* .sidebar.collapsed .toggle-btn { ... } */
 
 .sidebar-nav {
   flex: 1;
@@ -596,10 +611,6 @@ select:hover {
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s ease;
-}
-
-.main-content.expanded {
-  margin-left: 80px;
 }
 
 .main-content.expanded {
