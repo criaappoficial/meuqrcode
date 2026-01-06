@@ -23,7 +23,10 @@ const els = {
   contentType: document.getElementById('contentType'),
   pixFields: document.getElementById('pixFields'),
   pixKey: document.getElementById('pixKey'),
-  amount: document.getElementById('amount')
+  amount: document.getElementById('amount'),
+  colorDark: document.getElementById('colorDark'),
+  colorLight: document.getElementById('colorLight'),
+  qrSize: document.getElementById('qrSize')
 };
 
 let currentRecord = null;
@@ -85,6 +88,10 @@ async function init() {
       const pixKeyGroup = document.getElementById('pixKey')?.parentElement;
       if (pixKeyGroup) pixKeyGroup.classList.remove('hidden');
     }
+    if (els.colorDark) els.colorDark.value = data.colorDark || '#000000';
+    if (els.colorLight) els.colorLight.value = data.colorLight || '#FFFFFF';
+    if (els.qrSize) els.qrSize.value = data.size || 320;
+    
     els.loading.classList.add('hidden');
     els.form.classList.remove('hidden');
   } catch (error) {
@@ -109,7 +116,14 @@ els.form?.addEventListener('submit', async (event) => {
     });
     destination = newPayload;
   }
-  const payload = { title: els.form.title.value, destination, active: els.form.active.checked };
+  const payload = { 
+    title: els.form.title.value, 
+    destination, 
+    active: els.form.active.checked,
+    colorDark: els.colorDark?.value || '#000000',
+    colorLight: els.colorLight?.value || '#FFFFFF',
+    size: parseInt(els.qrSize?.value || 320, 10)
+  };
   if (!payload.destination) {
     showAlert(els.alert, 'Informe o conteúdo do QR (texto, link, pix, email, etc.).', 'error');
     return;

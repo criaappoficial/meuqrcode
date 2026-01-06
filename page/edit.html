@@ -69,6 +69,30 @@
             <span>QR Code ativo</span>
           </label>
         </div>
+
+        <div class="form-group">
+          <label>Personalização</label>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+            <div style="width: 80px;">
+              <label for="colorDark" style="font-size:0.8rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Cor</label>
+              <input type="color" id="colorDark" name="colorDark" class="input-color-modern" value="#000000" style="height:42px;" />
+            </div>
+            <div style="width: 80px;">
+              <label for="colorLight" style="font-size:0.8rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Fundo</label>
+              <input type="color" id="colorLight" name="colorLight" class="input-color-modern" value="#FFFFFF" style="height:42px;" />
+            </div>
+            <div style="flex:1; min-width:160px;">
+              <label for="qrSize" style="font-size:0.8rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Tamanho</label>
+              <select id="qrSize" name="qrSize" style="height:42px;">
+                <option value="200">Pequeno (200px)</option>
+                <option value="320">Médio (320px)</option>
+                <option value="480">Grande (480px)</option>
+                <option value="640">Extra (640px)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <button type="submit" class="btn btn-primary" id="submitBtn">Salvar Alterações</button>
       </form>
 

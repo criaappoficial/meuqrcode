@@ -93,14 +93,17 @@
         </div>
 
         <div class="form-group">
-          <label for="qrStyle">Modelo do QR</label>
-          <select id="qrStyle" name="qrStyle">
-            <option value="default">Padrão</option>
-            <option value="dark">Escuro</option>
-            <option value="invert">Invertido</option>
-            <option value="light">Claro</option>
-            <option value="blue">Azul</option>
-          </select>
+          <label>Cores do QR</label>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <div style="flex:1; min-width:120px;">
+              <label for="qrColorDark" style="font-size:0.85rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Cor (Módulos)</label>
+              <input id="qrColorDark" name="qrColorDark" type="color" value="#000000" class="input-color-modern" />
+            </div>
+            <div style="flex:1; min-width:120px;">
+              <label for="qrColorLight" style="font-size:0.85rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Fundo</label>
+              <input id="qrColorLight" name="qrColorLight" type="color" value="#FFFFFF" class="input-color-modern" />
+            </div>
+          </div>
         </div>
 
         <div class="form-group">

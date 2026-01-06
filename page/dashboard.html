@@ -23,37 +23,48 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn btn-secondary" id="logoutBtn">Sair</button>
-        <a href="new.html" class="btn btn-primary">+ Novo QR Code</a>
-        <button class="btn btn-secondary" id="openCalc">Calculadora</button>
-        <div id="calcPanel" class="hidden" style="position:relative;">
-          <div class="calc-card" style="position:absolute; right:0; top:48px; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); padding:1rem; width:320px; z-index:10;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
-              <strong>Resumo do Plano</strong>
-              <button class="icon-button" id="closeCalc">✕</button>
-            </div>
-            <div style="font-size:.9rem; color:var(--text);">
-              <div style="display:flex; justify-content:space-between; margin:.35rem 0;">
-                <span>Links dinâmicos incluídos</span><span id="calcIncludedLinks">3</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin:.35rem 0;">
-                <span>Links adicionais</span><span id="calcExtraLinks">0</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin:.35rem 0;">
-                <span>Cores fora do base</span><span id="calcExtraColors">0</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin:.35rem 0;">
-                <span>Tamanhos fora do base</span><span id="calcExtraSizes">0</span>
-              </div>
-              <hr style="margin:.5rem 0; border:none; border-top:1px solid var(--border);" />
-              <div style="display:flex; justify-content:space-between; margin:.35rem 0;">
-                <span>Total de adicionais</span><strong id="calcTotal">R$ 0,00</strong>
-              </div>
-            </div>
+        <div id="balanceTrigger" class="balance-card">
+          <div class="balance-icon">💰</div>
+          <div class="balance-info">
+            <span class="balance-label">Adicionais</span>
+            <strong id="headerBalanceTotal" class="balance-value">R$ 0,00</strong>
           </div>
         </div>
+        <button class="btn btn-secondary" id="logoutBtn">Sair</button>
+        <a href="new.html" class="btn btn-primary">+ Novo QR Code</a>
+        
+      </header>
+
+    <!-- Painel Lateral da Calculadora -->
+    <div id="calcPanel" class="calc-panel">
+      <div class="calc-header">
+        <h3>Resumo de Custos</h3>
+        <button id="closeCalc" class="icon-button-sm">✕</button>
       </div>
-    </header>
+      <div class="calc-body">
+        <div class="calc-row">
+          <span>Links dinâmicos incluídos</span>
+          <span id="calcIncludedLinks" class="font-mono">0</span>
+        </div>
+        <div class="calc-row">
+          <span>Links adicionais</span>
+          <span id="calcExtraLinks" class="font-mono">0</span>
+        </div>
+        <div class="calc-row">
+          <span>Cores personalizadas</span>
+          <span id="calcExtraColors" class="font-mono">0</span>
+        </div>
+        <div class="calc-row">
+          <span>Tamanhos personalizados</span>
+          <span id="calcExtraSizes" class="font-mono">0</span>
+        </div>
+        <div class="calc-divider"></div>
+        <div class="calc-row total">
+          <span>Total Adicional</span>
+          <strong id="calcTotal">R$ 0,00</strong>
+        </div>
+      </div>
+    </div>
 
     <section class="card">
       <div class="card-header">

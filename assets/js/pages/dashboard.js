@@ -40,7 +40,11 @@ const BASE_RULES = {
   baseSizes: [200, 320],
   pricePerExtraLink: 5.0,
   pricePerExtraColor: 2.5,
-  pricePerExtraSize: 4.0
+  pricePerExtraSize: 4.0,
+  baseColorCombos: [
+    ['#000000', '#FFFFFF'],
+    ['#FFFFFF', '#000000']
+  ]
 };
 
 observeAuth((user) => {
@@ -72,8 +76,11 @@ observeAuth((user) => {
   loadDashboard();
 }, () => window.location.replace('../login.html'));
 
-els.openCalc?.addEventListener('click', () => toggleState(els.calcPanel, true));
-els.closeCalc?.addEventListener('click', () => toggleState(els.calcPanel, false));
+els.openCalc?.addEventListener('click', () => els.calcPanel.classList.add('active'));
+els.balanceTrigger?.addEventListener('click', () => {
+  els.calcPanel.classList.toggle('active');
+});
+els.closeCalc?.addEventListener('click', () => els.calcPanel.classList.remove('active'));
 
 els.logoutBtn?.addEventListener('click', async () => {
   await logoutUser();
@@ -96,6 +103,7 @@ els.tableBody?.addEventListener('click', (event) => {
     selectedDocId = docId;
     document.getElementById('modalMessage').innerHTML = `Tem certeza que deseja excluir <strong>${title || 'este QR Code'}</strong>?`;
     toggleState(els.deleteModal, true);
+    setTimeout(() => els.deleteModal.classList.add('active'), 10);
   }
 
   if (target.dataset.action === 'preview') {
@@ -106,9 +114,16 @@ els.tableBody?.addEventListener('click', (event) => {
     const qrValue = isPix
       ? dest
       : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
+    
+    const colorDark = target.dataset.colorDark || '#000000';
+    const colorLight = target.dataset.colorLight || '#FFFFFF';
+    const size = parseInt(target.dataset.size || 320, 10);
+    const opts = { width: size, color: { dark: colorDark, light: colorLight } };
+
     els.qrPreviewUrl.textContent = qrValue;
     toggleState(els.qrPreviewModal, true);
-    drawQRCode('qrPreviewCanvas', qrValue).catch(console.error);
+    setTimeout(() => els.qrPreviewModal.classList.add('active'), 10);
+    drawQRCode('qrPreviewCanvas', qrValue, opts).catch(console.error);
   }
 
   if (target.dataset.action === 'download') {
@@ -120,7 +135,13 @@ els.tableBody?.addEventListener('click', (event) => {
       ? dest
       : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
     const filename = `${(title || 'qrcode').replace(/\s+/g, '-').toLowerCase()}-${publicId}.png`;
-    drawQRCode('qrPreviewCanvas', qrValue)
+    
+    const colorDark = target.dataset.colorDark || '#000000';
+    const colorLight = target.dataset.colorLight || '#FFFFFF';
+    const size = parseInt(target.dataset.size || 320, 10);
+    const opts = { width: size, color: { dark: colorDark, light: colorLight } };
+
+    drawQRCode('qrPreviewCanvas', qrValue, opts)
       .then(() => downloadQRCode('qrPreviewCanvas', filename))
       .catch(console.error);
   }
@@ -133,7 +154,13 @@ els.tableBody?.addEventListener('click', (event) => {
     const qrValue = isPix
       ? dest
       : ((BASE_URL === window.location.origin) ? composeQrUrl(publicId) : (fixedUrl || composeQrUrl(publicId)));
-    drawQRCode('qrPreviewCanvas', qrValue)
+      
+    const colorDark = target.dataset.colorDark || '#000000';
+    const colorLight = target.dataset.colorLight || '#FFFFFF';
+    const size = parseInt(target.dataset.size || 320, 10);
+    const opts = { width: size, color: { dark: colorDark, light: colorLight } };
+
+    drawQRCode('qrPreviewCanvas', qrValue, opts)
       .then(() => {
         const canvas = document.getElementById('qrPreviewCanvas');
         if (!canvas) return;
@@ -153,7 +180,8 @@ els.confirmDelete?.addEventListener('click', async () => {
   try {
     await QRController.remove(selectedDocId);
     showAlert(els.alert, 'QR Code excluído.', 'success');
-    toggleState(els.deleteModal, false);
+    els.deleteModal.classList.remove('active');
+    setTimeout(() => toggleState(els.deleteModal, false), 300);
     await loadDashboard();
   } catch (error) {
     showAlert(els.alert, 'Erro ao excluir QR Code.', 'error');
@@ -164,9 +192,15 @@ els.confirmDelete?.addEventListener('click', async () => {
   }
 });
 
-els.cancelDelete?.addEventListener('click', () => toggleState(els.deleteModal, false));
-document.getElementById('closeDeleteModal')?.addEventListener('click', () => toggleState(els.deleteModal, false));
-document.getElementById('closeQrPreview')?.addEventListener('click', () => toggleState(els.qrPreviewModal, false));
+const closeModal = (modal) => {
+  if (!modal) return;
+  modal.classList.remove('active');
+  setTimeout(() => toggleState(modal, false), 300);
+};
+
+els.cancelDelete?.addEventListener('click', () => closeModal(els.deleteModal));
+document.getElementById('closeDeleteModal')?.addEventListener('click', () => closeModal(els.deleteModal));
+document.getElementById('closeQrPreview')?.addEventListener('click', () => closeModal(els.qrPreviewModal));
 
 async function loadDashboard() {
   try {
@@ -192,15 +226,15 @@ async function loadDashboard() {
         <td>${qr.title || 'Sem título'}</td>
         <td class="col-destination"><a href="${qr.destination}" target="_blank">${truncate(qr.destination)}</a></td>
         <td class="col-qr">
-          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">🔍</button>
+          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}" data-color-dark="${qr.colorDark || '#000000'}" data-color-light="${qr.colorLight || '#FFFFFF'}" data-size="${qr.size || 320}">🔍</button>
         </td>
         <td><span class="badge ${qr.active ? 'badge-active' : 'badge-inactive'}">${qr.active ? 'Ativo' : 'Inativo'}</span></td>
         <td>${formatDate(qr.createdAt)}</td>
         <td>
           <div class="actions">
             <button class="icon-button" title="Editar" data-action="edit" data-id="${qr.docId}" data-title="${qr.title}">✏️</button>
-            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">📥</button>
-            <button class="icon-button" title="Imprimir QR Code" data-action="print" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">🖨️</button>
+            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}" data-color-dark="${qr.colorDark || '#000000'}" data-color-light="${qr.colorLight || '#FFFFFF'}" data-size="${qr.size || 320}">📥</button>
+            <button class="icon-button" title="Imprimir QR Code" data-action="print" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}" data-color-dark="${qr.colorDark || '#000000'}" data-color-light="${qr.colorLight || '#FFFFFF'}" data-size="${qr.size || 320}">🖨️</button>
             <button class="icon-button" title="Excluir" data-action="delete" data-id="${qr.docId}" data-title="${qr.title}">🗑</button>
           </div>
         </td>
@@ -225,7 +259,13 @@ function updateCalculator() {
   if (!els.calcIncludedLinks) return;
   const totalLinks = currentQrCodes.length;
   const extraLinks = Math.max(0, totalLinks - BASE_RULES.includedLinks);
-  const extraColors = currentQrCodes.filter((qr) => !BASE_RULES.baseStyles.includes((qr.style || 'dark'))).length;
+  const extraColors = currentQrCodes.filter((qr) => {
+    const style = (qr.style || 'dark');
+    if (BASE_RULES.baseStyles.includes(style)) return false;
+    const d = String(qr.colorDark || '#000000').toUpperCase();
+    const l = String(qr.colorLight || '#FFFFFF').toUpperCase();
+    return !BASE_RULES.baseColorCombos.some(([cd, cl]) => cd === d && cl === l);
+  }).length;
   const extraSizes = currentQrCodes.filter((qr) => !BASE_RULES.baseSizes.includes(parseInt(qr.size || 320, 10))).length;
   const total = (extraLinks * BASE_RULES.pricePerExtraLink) + (extraColors * BASE_RULES.pricePerExtraColor) + (extraSizes * BASE_RULES.pricePerExtraSize);
   els.calcIncludedLinks.textContent = String(BASE_RULES.includedLinks);
@@ -233,4 +273,5 @@ function updateCalculator() {
   els.calcExtraColors.textContent = String(extraColors);
   els.calcExtraSizes.textContent = String(extraSizes);
   els.calcTotal.textContent = currency(total);
+  if (els.headerBalanceTotal) els.headerBalanceTotal.textContent = currency(total);
 }

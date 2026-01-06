@@ -15,7 +15,8 @@ const preview = document.getElementById('qrPreview');
 const qrUrlText = document.getElementById('qrUrl');
 const fixedUserInput = document.getElementById('fixedUser');
 const fixedSlugInput = document.getElementById('fixedSlug');
-const styleSelect = document.getElementById('qrStyle');
+const colorDarkInput = document.getElementById('qrColorDark');
+const colorLightInput = document.getElementById('qrColorLight');
 const formatSelect = document.getElementById('qrFormat');
 const qrSvgWrap = document.getElementById('qrSvgWrap');
 const contentTypeSelect = document.getElementById('contentType');
@@ -102,9 +103,11 @@ form?.addEventListener('submit', async (event) => {
       txid: txidInput.value,
       description: descriptionInput.value
     }) : destination;
-    const chosenStyle = (styleSelect?.value || 'dark');
+    const chosenStyle = 'custom';
     const chosenSize = parseInt(document.getElementById('qrSize')?.value || '320', 10);
-    const created = await QRController.create({ title, destination: destinationToSave, active, id: fixedId, fixedUrl: fixedUrlForSave, ownerId: currentUserId, style: chosenStyle, size: chosenSize });
+    const chosenDark = (colorDarkInput?.value || '#000000');
+    const chosenLight = (colorLightInput?.value || '#FFFFFF');
+    const created = await QRController.create({ title, destination: destinationToSave, active, id: fixedId, fixedUrl: fixedUrlForSave, ownerId: currentUserId, style: chosenStyle, size: chosenSize, colorDark: chosenDark, colorLight: chosenLight });
     const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(created.id)
       : (created.fixedUrl || composeQrUrl(created.id));
@@ -120,7 +123,7 @@ form?.addEventListener('submit', async (event) => {
     }) : null;
     const valueForQr = isPix ? pixPayload : (created.fixedUrl || composeQrUrl(created.id));
     qrUrlText.textContent = isPix ? pixPayload : displayUrl;
-    await drawStyledQR(valueForQr, style, format, chosenSize);
+    await drawStyledQR(valueForQr, style, format, chosenSize, chosenDark, chosenLight);
     preview.classList.remove('hidden');
     form.classList.add('hidden');
     showAlert(alertContainer, 'QR Code criado com sucesso!', 'success');
@@ -143,7 +146,7 @@ downloadBtn?.addEventListener('click', () => {
   }
 });
 const uniqueSuffix = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 4)).slice(-6);
-function drawStyledQR(value, style = 'default', format = 'png', size = 320) {
+function drawStyledQR(value, style = 'default', format = 'png', size = 320, colorDark = null, colorLight = null) {
   const optionsByStyle = {
     default: { color: { dark: '#050814', light: '#FFFFFF' } },
     dark: { color: { dark: '#000000', light: '#FFFFFF' } },
@@ -151,7 +154,12 @@ function drawStyledQR(value, style = 'default', format = 'png', size = 320) {
     light: { color: { dark: '#333333', light: '#FAFAFA' } },
     blue: { color: { dark: '#1f4ed8', light: '#FFFFFF' } }
   };
-  const opts = optionsByStyle[style] || optionsByStyle.default;
+  let opts = optionsByStyle[style] || optionsByStyle.default;
+  if (style === 'custom' || (colorDark && colorLight)) {
+    const d = colorDark || '#000000';
+    const l = colorLight || '#FFFFFF';
+    opts = { color: { dark: d, light: l } };
+  }
   const withSize = { ...opts, width: size };
   if (format === 'svg') {
     return drawQRCodeSvg('qrSvgWrap', value, withSize).then(() => {
