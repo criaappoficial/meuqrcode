@@ -23,7 +23,7 @@ const slugify = (value) =>
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9\-]/g, '');
 
-export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl, ownerId }) {
+export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl, ownerId, style }) {
   const id = slugify(fixedId) || slugify(title) || `link-${Date.now()}`;
   const docId = id.replace(/\//g, '__');
   const payload = {
@@ -33,6 +33,7 @@ export async function createQRCodeRecord({ title, destination, active = true, id
     destination,
     active,
     ownerId: ownerId || null,
+    style: style || 'default',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };

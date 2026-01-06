@@ -93,7 +93,6 @@ form?.addEventListener('submit', async (event) => {
   submitBtn.innerHTML = '<span class="loading"></span> Gerando...';
 
   try {
-    const isPix = contentTypeSelect?.value === 'pix';
     const destinationToSave = isPix ? buildPixPayload({
       pixKey: pixKeyInput.value,
       merchantName: merchantNameInput.value,
@@ -102,11 +101,19 @@ form?.addEventListener('submit', async (event) => {
       txid: txidInput.value,
       description: descriptionInput.value
     }) : destination;
-    const created = await QRController.create({ title, destination: destinationToSave, active, id: fixedId, fixedUrl: fixedUrlForSave, ownerId: currentUserId });
+    const style = (styleSelect?.value || 'default');
+    const created = await QRController.create({ 
+      title, 
+      destination: destinationToSave, 
+      active, 
+      id: fixedId, 
+      fixedUrl: fixedUrlForSave, 
+      ownerId: currentUserId,
+      style 
+    });
     const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(created.id)
       : (created.fixedUrl || composeQrUrl(created.id));
-    const style = (styleSelect?.value || 'default');
     const format = (formatSelect?.value || 'png');
     const pixPayload = isPix ? buildPixPayload({
       pixKey: pixKeyInput.value,

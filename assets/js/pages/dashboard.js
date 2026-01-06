@@ -1,6 +1,9 @@
 import { observeAuth, logoutUser } from '../controllers/authController.js';
 import { QRController, drawQRCode, downloadQRCode } from '../controllers/qrController.js';
+import { PricingModel } from '../models/pricingModel.js';
 import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
+
+console.log('Dashboard JS v2 loaded');
 
 const PRIMARY_DOMAIN = 'https://qrcode-alugueja.netlify.app';
 const BASE_URL = (['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) ? window.location.origin : PRIMARY_DOMAIN;
@@ -42,6 +45,7 @@ observeAuth((user) => {
   if (greetingEl) greetingEl.textContent = greetingText;
   const taglineEl = document.getElementById('dashboardTagline');
   if (taglineEl) taglineEl.textContent = greetingText;
+  /*
   const badge = document.querySelector('.brand-badge');
   if (badge) {
     const initials = (() => {
@@ -52,13 +56,45 @@ observeAuth((user) => {
     })();
     badge.textContent = initials || 'QR';
   }
+  */
   loadDashboard();
 }, () => window.location.replace('../login.html'));
 
-els.logoutBtn?.addEventListener('click', async () => {
+const logoutBtn = document.getElementById('logoutBtnSidebar') || document.getElementById('logoutBtn');
+logoutBtn?.addEventListener('click', async () => {
   await logoutUser();
   window.location.replace('../login.html');
 });
+
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const sidebar = document.querySelector('.sidebar');
+if (mobileMenuBtn && sidebar) {
+    mobileMenuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+    });
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 900 && 
+            sidebar.classList.contains('active') && 
+            !sidebar.contains(e.target) && 
+            !mobileMenuBtn.contains(e.target)) {
+            sidebar.classList.remove('active');
+        }
+    });
+}
+
+const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+const mainContent = document.querySelector('.main-content');
+if (toggleSidebarBtn && sidebar && mainContent) {
+    toggleSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        
+        // Salvar preferência do usuário (opcional)
+        // localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    });
+}
 
 els.tableBody?.addEventListener('click', (event) => {
   const target = event.target.closest('[data-action]');
@@ -155,11 +191,13 @@ async function loadDashboard() {
     toggleState(els.loading, false);
 
     if (!qrCodes.length) {
+      try { updatePricingUI([]); } catch(e) { console.error('Pricing Error:', e); }
       toggleState(els.emptyState, true);
       toggleState(els.tableWrap, false);
       return;
     }
 
+    try { updatePricingUI(qrCodes); } catch(e) { console.error('Pricing Error:', e); }
     toggleState(els.emptyState, false);
     toggleState(els.tableWrap, true);
 
@@ -191,4 +229,16 @@ async function loadDashboard() {
 
 function truncate(text = '', size = 48) {
   return text.length > size ? `${text.substring(0, size)}…` : text;
+}
+
+function updatePricingUI(qrCodes) {
+  const pricing = PricingModel.calculateMonthlyCost(qrCodes);
+  const planCostEl = document.getElementById('planCost');
+  if (planCostEl) {
+      planCostEl.innerHTML = `
+          <i class="fas fa-calculator"></i>
+          <span>${pricing.formattedTotal} / mês</span>
+      `;
+      planCostEl.title = `Plano: ${pricing.breakdown.activeQRs} ativos (${pricing.breakdown.extraQRs} extras), ${pricing.breakdown.paidColors} cores pagas.`;
+  }
 }

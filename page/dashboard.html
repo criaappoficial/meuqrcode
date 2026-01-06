@@ -12,57 +12,125 @@
   <link rel="stylesheet" href="../assets/css/styles.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="brand-badge"><i class="fas fa-qrcode"></i></div>
-        <div>
-          <strong id="appTitle">QR Code Manager</strong>
-          
-          <p id="greeting" style="color:var(--text-dim); font-size:.75rem; margin-top: 5px;"></p>
-        </div>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fas fa-qrcode"></i>
+        <span>MeuQRCode</span>
+        <button id="toggleSidebarBtn" class="toggle-btn" title="Minimizar Menu">
+          <i class="fas fa-chevron-left"></i>
+        </button>
       </div>
-      <div class="header-actions">
-        <button class="btn btn-secondary" id="logoutBtn">Sair</button>
-        <a href="new.html" class="btn btn-primary">+ Novo QR Code</a>
-      </div>
-    </header>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="dashboard.html" class="active">
+              <i class="fas fa-home"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="create-card.html">
+              <i class="fas fa-id-card"></i>
+              <span>Criar Cartão</span>
+            </a>
+          </li>
+          <div class="divider"></div>
+          <li>
+            <a href="#contato">
+              <i class="fas fa-envelope"></i>
+              <span>Contato</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
-    <section class="card">
-      <div class="card-header">
-        <h2 class="card-title">Coleção de QR Codes</h2>
-        <p id="dashboardTagline" style="color:var(--text-dim);"></p>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
       </div>
-      <div id="alert-container"></div>
-      <div id="loading" class="text-center" style="padding:2rem;">
-        <div class="loading" style="margin:auto;"></div>
-        <p style="margin-top:1rem; color:var(--text-dim);">Carregando QR Codes...</p>
-      </div>
-      <div id="qrcodes-container" class="hidden">
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Destino</th>
-                <th>QR</th>
-                <th>Status</th>
-                <th>Criado em</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="qrcodes-table-body"></tbody>
-          </table>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="top-navbar">
+        <div class="navbar-left">
+          <h1 id="appTitle">Dashboard</h1>
+          <p id="greeting" style="color:var(--text-dim); font-size:0.9rem; margin-top: 4px;"></p>
+        </div>
+        
+        <div class="navbar-right">
+          <div id="planCost" class="plan-badge">
+            <i class="fas fa-calculator"></i>
+            <span>Calculando...</span>
+          </div>
+          <div class="user-info">
+            <div class="brand-badge" style="width:40px; height:40px; font-size:1rem;">
+              <i class="fas fa-user"></i>
+            </div>
+          </div>
         </div>
       </div>
-      <div id="empty-state" class="empty-state hidden">
-        <div class="empty-state-icon">✨</div>
-        <h3>Nenhum QR Code ainda</h3>
-        <p style="color:var(--text-dim);">Clique em "Novo QR Code" para começar.</p>
-      </div>
-    </section>
+
+      <div id="alert-container"></div>
+
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Seus QR Codes</h2>
+          <a href="new.html" class="btn btn-primary">+ Novo</a>
+        </div>
+
+        <div id="loading" class="text-center" style="padding:2rem;">
+          <div class="loading" style="margin:auto;"></div>
+          <p style="margin-top:1rem; color:var(--text-dim);">Carregando QR Codes...</p>
+        </div>
+
+        <div id="qrcodes-container" class="hidden">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Destino</th>
+                  <th>QR</th>
+                  <th>Status</th>
+                  <th>Criado em</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="qrcodes-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="empty-state" class="empty-state hidden">
+          <div class="empty-state-icon" style="font-size:3rem; margin-bottom:1rem;">✨</div>
+          <h3>Nenhum QR Code ainda</h3>
+          <p style="color:var(--text-dim);">Clique em "Novo" para começar.</p>
+        </div>
+      </section>
+
+      <!-- Contact Footer Section (Hidden by default, shown when clicking Contato?) -->
+      <!-- Actually user asked "Contado chamando o rodape". I will add a footer at bottom of main content -->
+      <footer id="contato" style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.9rem;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <strong>MeuQRCode</strong> &copy; 2025
+          </div>
+          <div>
+            <a href="#" style="color: inherit; text-decoration: none; margin-left: 1rem;">Suporte</a>
+            <a href="#" style="color: inherit; text-decoration: none; margin-left: 1rem;">Termos</a>
+          </div>
+        </div>
+      </footer>
+    </main>
   </div>
 
+  <!-- Modals -->
   <div id="deleteModal" class="modal-overlay hidden">
     <div class="modal">
       <div class="modal-header">
@@ -77,24 +145,22 @@
     </div>
   </div>
 
-  
-      <div id="qrPreviewModal" class="modal-overlay hidden">
-        <div class="modal">
-          <div class="modal-header">
-            <h3 class="modal-title">Pré-visualização do QR Code</h3>
-            <button class="modal-close" id="closeQrPreview">×</button>
-          </div>
-          <div class="modal-body" style="text-align:center;">
-            <canvas id="qrPreviewCanvas"></canvas>
-            <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
-              <small id="qrPreviewUrl"></small>
-            </p>
-            <!-- button class="btn btn-secondary" id="printQrFromModal" style="margin-top: 1rem;">🖨️ Imprimir</button -->
-          </div>
-        </div>
+  <div id="qrPreviewModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Pré-visualização do QR Code</h3>
+        <button class="modal-close" id="closeQrPreview">×</button>
       </div>
+      <div class="modal-body" style="text-align:center;">
+        <canvas id="qrPreviewCanvas"></canvas>
+        <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
+          <small id="qrPreviewUrl"></small>
+        </p>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-  <script type="module" src="../assets/js/pages/dashboard.js"></script>
+  <script type="module" src="../assets/js/pages/dashboard.js?v=2"></script>
 </body>
 </html>
