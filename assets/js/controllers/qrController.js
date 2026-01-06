@@ -16,14 +16,18 @@ export const QRController = {
   all: () => listQRCodes()
 };
 
-export function drawQRCode(canvasId, value) {
+export function drawQRCode(canvasId, value, options = {}) {
   return new Promise((resolve, reject) => {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return reject(new Error('Canvas não encontrado'));
+    
+    const width = options.size || 320;
+    const color = options.colors || { dark: '#050814', light: '#FFFFFF' };
+
     QRCode.toCanvas(canvas, value, {
-      width: 320,
+      width: parseInt(width),
       margin: 1,
-      color: { dark: '#050814', light: '#FFFFFF' }
+      color: color
     }, (error) => error ? reject(error) : resolve(canvas));
   });
 }

@@ -24,6 +24,7 @@ const els = {
 };
 
 let selectedDocId = null;
+let allQrCodes = [];
 
 observeAuth(loadDashboard, () => window.location.replace('../index.html'));
 
@@ -39,6 +40,9 @@ els.tableBody?.addEventListener('click', (event) => {
   const title = target.dataset.title;
   const destination = target.dataset.destination;
   const publicId = target.dataset.publicId;
+
+  const qr = allQrCodes.find(q => q.docId === docId);
+  const options = qr ? qr.options : {};
 
   if (target.dataset.action === 'edit') {
     window.location.href = `edit.html?id=${docId}`;
@@ -58,7 +62,7 @@ els.tableBody?.addEventListener('click', (event) => {
       : (fixedUrl || composeQrUrl(publicId));
     els.qrPreviewUrl.textContent = qrUrl;
     toggleState(els.qrPreviewModal, true);
-    drawQRCode('qrPreviewCanvas', qrUrl).catch(console.error);
+    drawQRCode('qrPreviewCanvas', qrUrl, options).catch(console.error);
   }
 
   if (target.dataset.action === 'download') {
@@ -68,7 +72,7 @@ els.tableBody?.addEventListener('click', (event) => {
       ? composeQrUrl(publicId)
       : (fixedUrl || composeQrUrl(publicId));
     const filename = `${(title || 'qrcode').replace(/\s+/g, '-').toLowerCase()}-${publicId}.png`;
-    drawQRCode('qrPreviewCanvas', qrUrl)
+    drawQRCode('qrPreviewCanvas', qrUrl, options)
       .then(() => downloadQRCode('qrPreviewCanvas', filename))
       .catch(console.error);
   }
@@ -99,7 +103,10 @@ document.getElementById('closeQrPreview')?.addEventListener('click', () => toggl
 async function loadDashboard() {
   try {
     toggleState(els.loading, true);
+    
     const qrCodes = await QRController.all();
+    allQrCodes = qrCodes;
+    updateCalculator(qrCodes);
     toggleState(els.loading, false);
 
     if (!qrCodes.length) {
@@ -133,6 +140,38 @@ async function loadDashboard() {
     toggleState(els.loading, false);
     showAlert(els.alert, 'Erro ao carregar QR Codes.', 'error');
     console.error(error);
+  }
+}
+
+function updateCalculator(qrCodes) {
+  const totalLinks = qrCodes.length;
+  const customColorLinks = qrCodes.filter(q => q.options?.isCustomColor).length;
+  
+  const freeLimit = 3;
+  const pricePerExtraLink = 9.90;
+  const pricePerCustomColor = 4.90;
+  
+  let total = 0;
+  
+  // Calculate Extra Links
+  const extraLinks = Math.max(0, totalLinks - freeLimit);
+  total += extraLinks * pricePerExtraLink;
+  
+  // Calculate Custom Colors
+  total += customColorLinks * pricePerCustomColor;
+  
+  const totalEl = document.getElementById('plan-total');
+  const detailsEl = document.getElementById('plan-details');
+  
+  if (totalEl) totalEl.textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  if (detailsEl) {
+    let details = [];
+    if (totalLinks <= freeLimit) details.push(`${totalLinks}/${freeLimit} links gratuitos`);
+    else details.push(`${freeLimit} grátis + ${extraLinks} extras`);
+    
+    if (customColorLinks > 0) details.push(`${customColorLinks} com cor customizada`);
+    
+    detailsEl.textContent = details.length ? details.join(' • ') : 'Plano Gratuito';
   }
 }
 

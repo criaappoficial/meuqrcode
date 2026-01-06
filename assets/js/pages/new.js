@@ -15,8 +15,28 @@ const preview = document.getElementById('qrPreview');
 const qrUrlText = document.getElementById('qrUrl');
 const fixedUserInput = document.getElementById('fixedUser');
 const fixedSlugInput = document.getElementById('fixedSlug');
+const colorModeSelect = document.getElementById('colorMode');
+const customColorsDiv = document.getElementById('customColors');
+const colorDarkInput = document.getElementById('colorDark');
+const colorLightInput = document.getElementById('colorLight');
+const sizeSelect = document.getElementById('size');
 
 observeAuth(null, () => window.location.replace('../index.html'));
+
+colorModeSelect?.addEventListener('change', () => {
+  if (colorModeSelect.value === 'custom') {
+    customColorsDiv.classList.remove('hidden');
+  } else {
+    customColorsDiv.classList.add('hidden');
+  }
+});
+
+const getSelectedColors = () => {
+  const mode = colorModeSelect ? colorModeSelect.value : 'standard-bw';
+  if (mode === 'standard-wb') return { dark: '#FFFFFF', light: '#000000' };
+  if (mode === 'custom') return { dark: colorDarkInput.value, light: colorLightInput.value };
+  return { dark: '#000000', light: '#FFFFFF' };
+};
 
 const toSlug = (value) =>
   (value || '')
@@ -53,17 +73,23 @@ form?.addEventListener('submit', async (event) => {
   const fixedId = slugPartRaw ? slugPartRaw : `${userPart}${uniqueSuffix()}`;
   const fixedUrlForSave = `${PRIMARY_DOMAIN}/${fixedId}`;
 
+  const options = {
+    size: sizeSelect ? sizeSelect.value : 320,
+    colors: getSelectedColors(),
+    isCustomColor: colorModeSelect ? colorModeSelect.value === 'custom' : false
+  };
+
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<span class="loading"></span> Gerando...';
 
   try {
-    const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave });
+    const created = await QRController.create({ title, destination, active, id: fixedId, fixedUrl: fixedUrlForSave, options });
     const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(created.id)
       : (created.fixedUrl || composeQrUrl(created.id));
     const qrCodeUrl = created.fixedUrl || composeQrUrl(created.id);
     qrUrlText.textContent = displayUrl;
-    await drawQRCode('qrCanvas', qrCodeUrl);
+    await drawQRCode('qrCanvas', qrCodeUrl, options);
     preview.classList.remove('hidden');
     form.classList.add('hidden');
     showAlert(alertContainer, 'QR Code criado com sucesso!', 'success');

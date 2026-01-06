@@ -2,8 +2,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /qrcodes/{id} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      // Qualquer um pode ler um QR Code específico (para redirecionamento)
+      allow get: if true;
+      
+      // Listar apenas os próprios QR Codes
+      allow list: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Criar: deve estar autenticado e definir userId como o próprio uid
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // Atualizar/Deletar: apenas o dono
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
   }
 }

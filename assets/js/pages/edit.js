@@ -25,13 +25,33 @@ const els = {
   loading: document.getElementById('loading'),
   preview: document.getElementById('qrPreview'),
   qrUrl: document.getElementById('qrUrl'),
-  submit: document.getElementById('submitBtn')
+  submit: document.getElementById('submitBtn'),
+  colorMode: document.getElementById('colorMode'),
+  customColors: document.getElementById('customColors'),
+  colorDark: document.getElementById('colorDark'),
+  colorLight: document.getElementById('colorLight'),
+  size: document.getElementById('size')
 };
 
 let currentRecord = null;
 if (!docId) window.location.replace('dashboard.html');
 
 observeAuth(() => init(), () => window.location.replace('../index.html'));
+
+els.colorMode?.addEventListener('change', () => {
+  if (els.colorMode.value === 'custom') {
+    els.customColors.classList.remove('hidden');
+  } else {
+    els.customColors.classList.add('hidden');
+  }
+});
+
+const getSelectedColors = () => {
+  const mode = els.colorMode ? els.colorMode.value : 'standard-bw';
+  if (mode === 'standard-wb') return { dark: '#FFFFFF', light: '#000000' };
+  if (mode === 'custom') return { dark: els.colorDark.value, light: els.colorLight.value };
+  return { dark: '#000000', light: '#FFFFFF' };
+};
 
 async function init() {
   try {
@@ -45,6 +65,27 @@ async function init() {
     els.form.title.value = data.title;
     els.form.destination.value = data.destination;
     els.form.active.checked = data.active !== false;
+
+    if (data.options) {
+      if (els.size) els.size.value = data.options.size || 320;
+      
+      if (data.options.isCustomColor) {
+        els.colorMode.value = 'custom';
+        els.customColors.classList.remove('hidden');
+        if (data.options.colors) {
+          els.colorDark.value = data.options.colors.dark;
+          els.colorLight.value = data.options.colors.light;
+        }
+      } else {
+        if (data.options.colors?.dark === '#FFFFFF' && data.options.colors?.light === '#000000') {
+          els.colorMode.value = 'standard-wb';
+        } else {
+          els.colorMode.value = 'standard-bw';
+        }
+        els.customColors.classList.add('hidden');
+      }
+    }
+
     els.loading.classList.add('hidden');
     els.form.classList.remove('hidden');
   } catch (error) {
@@ -58,7 +99,12 @@ els.form?.addEventListener('submit', async (event) => {
   const payload = {
     title: els.form.title.value,
     destination: normalizeUrl(els.form.destination.value),
-    active: els.form.active.checked
+    active: els.form.active.checked,
+    options: {
+      size: els.size ? els.size.value : 320,
+      colors: getSelectedColors(),
+      isCustomColor: els.colorMode ? els.colorMode.value === 'custom' : false
+    }
   };
 
   if (!payload.destination) {
@@ -76,7 +122,7 @@ els.form?.addEventListener('submit', async (event) => {
       : (currentRecord.fixedUrl || composeQrUrl(currentRecord.id));
     const qrCodeUrl = currentRecord.fixedUrl || composeQrUrl(currentRecord.id);
     els.qrUrl.textContent = displayUrl;
-    await drawQRCode('qrCanvas', qrCodeUrl);
+    await drawQRCode('qrCanvas', qrCodeUrl, payload.options);
     els.preview.classList.remove('hidden');
     els.form.classList.add('hidden');
     showAlert(els.alert, 'QR Code atualizado!', 'success');

@@ -1,4 +1,4 @@
-import { db } from '../core/firebase.js';
+import { db, auth } from '../core/firebase.js';
 import {
   collection,
   setDoc,
@@ -23,15 +23,24 @@ const slugify = (value) =>
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9\-]/g, '');
 
-export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl }) {
+export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl, options = {} }) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Usuário não autenticado');
+
   const id = slugify(fixedId) || slugify(title) || `link-${Date.now()}`;
   const docId = id.replace(/\//g, '__');
   const payload = {
     id,
+    userId: user.uid,
     fixedUrl: fixedUrl || null,
     title,
     destination,
     active,
+    options: {
+      size: options.size || 320,
+      colors: options.colors || { dark: '#000000', light: '#ffffff' },
+      isCustomColor: options.isCustomColor || false
+    },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
@@ -40,14 +49,18 @@ export async function createQRCodeRecord({ title, destination, active = true, id
   return payload;
 }
 
-export async function updateQRCodeRecord(docId, { title, destination, active }) {
+export async function updateQRCodeRecord(docId, { title, destination, active, options }) {
   const ref = doc(db, 'qrcodes', docId);
-  await updateDoc(ref, {
+  const updatePayload = {
     title,
     destination,
     active,
     updatedAt: serverTimestamp()
-  });
+  };
+  if (options) {
+    updatePayload.options = options;
+  }
+  await updateDoc(ref, updatePayload);
   return true;
 }
 
@@ -73,6 +86,17 @@ export async function getQRCodeRecordByPublicId(id) {
 }
 
 export async function listQRCodes() {
-  const snapshot = await getDocs(query(qrCollection, orderBy('createdAt', 'desc')));
+  const user = auth.currentUser;
+  if (!user) return [];
+
+  // Tenta buscar por userId (novos registros)
+  const q = query(
+    qrCollection, 
+    where('userId', '==', user.uid),
+    orderBy('createdAt', 'desc')
+  );
+
+  let snapshot = await getDocs(q);
+
   return snapshot.docs.map((docSnap) => ({ docId: docSnap.id, ...docSnap.data() }));
 }

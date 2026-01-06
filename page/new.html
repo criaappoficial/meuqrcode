@@ -56,6 +56,38 @@
         </div>
 
         <div class="form-group">
+          <label>Tamanho do QR Code (Plano Base)</label>
+          <select id="size" name="size" class="form-control">
+            <option value="200">Pequeno (200px)</option>
+            <option value="320" selected>Médio (320px)</option>
+            <option value="500">Grande (500px)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estilo e Cores</label>
+          <select id="colorMode" name="colorMode" class="form-control">
+            <option value="standard-bw" selected>Padrão (Preto no Branco) - Grátis</option>
+            <option value="standard-wb">Padrão (Branco no Preto) - Grátis</option>
+            <option value="custom">Personalizado (+ Taxa Adicional)</option>
+          </select>
+        </div>
+
+        <div id="customColors" class="form-group hidden" style="padding:1rem; background:var(--bg-subtle); border-radius:8px;">
+          <label style="margin-bottom:0.5rem; display:block;">Cores Personalizadas</label>
+          <div style="display:flex; gap:2rem; align-items:center;">
+            <div>
+              <span style="font-size:0.85rem; display:block; margin-bottom:0.25rem;">Cor dos Módulos (Escura)</span>
+              <input type="color" id="colorDark" name="colorDark" value="#050814" style="cursor:pointer; width:60px; height:40px; padding:0; border:none;">
+            </div>
+            <div>
+              <span style="font-size:0.85rem; display:block; margin-bottom:0.25rem;">Cor de Fundo (Clara)</span>
+              <input type="color" id="colorLight" name="colorLight" value="#FFFFFF" style="cursor:pointer; width:60px; height:40px; padding:0; border:none;">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label class="checkbox-inline">
             <input type="checkbox" id="active" name="active" checked />
             <span>Ativar imediatamente</span>
