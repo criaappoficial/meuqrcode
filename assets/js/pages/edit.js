@@ -225,3 +225,18 @@ function parsePix(payload) {
   };
   return out;
 }
+
+// Sidebar toggle logic
+const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+const sidebar = document.querySelector('.sidebar');
+const mainContent = document.querySelector('.main-content');
+if (toggleSidebarBtn && sidebar && mainContent) {
+    toggleSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        // Save state
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
+    });
+}
+
