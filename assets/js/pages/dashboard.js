@@ -6,10 +6,9 @@ import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
 console.log('Dashboard JS v2 loaded');
 
 const PRIMARY_DOMAIN = 'https://qrcode-alugueja.netlify.app';
-const BASE_URL = (['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) ? window.location.origin : PRIMARY_DOMAIN;
-const composeQrUrl = (id) => (BASE_URL === window.location.origin)
-  ? `${window.location.origin}/page/index.html?id=${id}`
-  : `${PRIMARY_DOMAIN}/${id}`;
+// Always use production domain for QR content, even on localhost
+const BASE_URL = PRIMARY_DOMAIN; 
+const composeQrUrl = (id) => `${PRIMARY_DOMAIN}/${id}`;
 
 const els = {
   logoutBtn: document.getElementById('logoutBtn'),
@@ -41,6 +40,7 @@ const els = {
   fixedSlug: document.getElementById('fixedSlug'),
   qrStyle: document.getElementById('qrStyle'),
   qrColor: document.getElementById('qrColor'),
+  qrSize: document.getElementById('qrSize'),
   qrFormat: document.getElementById('qrFormat'),
   qrSvgWrap: document.getElementById('qrSvgWrap'),
   contentType: document.getElementById('contentType'),
@@ -80,6 +80,8 @@ const showNewQr = () => {
 
   // Trigger content type change to set visibility correct
   els.contentType.dispatchEvent(new Event('change'));
+  // Calculate initial projected cost for new item
+  updateProjectedCost();
 };
 
 els.btnNewQr?.addEventListener('click', showNewQr);
@@ -88,6 +90,8 @@ els.btnBackDashboard2?.addEventListener('click', showDashboard);
 
 let selectedDocId = null;
 let currentUserId = null;
+let currentQRCodes = []; // Store locally for real-time pricing calculation
+let isEditingPopulation = false; // Flag to prevent cost updates during edit population
 
 
 observeAuth((user) => {
@@ -161,7 +165,7 @@ function buildPixPayload({ pixKey, merchantName, merchantCity, amount, txid, des
   return base + crc;
 }
 
-function drawStyledQR(value, style = 'default', format = 'png') {
+function drawStyledQR(value, style = 'default', format = 'png', size = 320) {
   const optionsByStyle = {
     default: { color: { dark: '#050814', light: '#FFFFFF' } },
     dark: { color: { dark: '#000000', light: '#FFFFFF' } },
@@ -175,6 +179,9 @@ function drawStyledQR(value, style = 'default', format = 'png') {
   } else {
     opts = optionsByStyle[style] || optionsByStyle.default;
   }
+
+  // Add width option
+  opts.width = parseInt(size) || 320;
 
   if (format === 'svg') {
     return drawQRCodeSvg('qrSvgWrap', value, opts).then(() => {
@@ -223,7 +230,7 @@ els.form?.addEventListener('submit', async (event) => {
   }
 
   els.submitBtn.disabled = true;
-  els.submitBtn.innerHTML = '<span class="loading"></span> Salvando...';
+  els.submitBtn.innerHTML = '<span class="loading"></span> Carregando...';
 
   try {
     const pixDataObj = isPix ? {
@@ -242,6 +249,7 @@ els.form?.addEventListener('submit', async (event) => {
        els.qrColor.classList[isCustom ? 'remove' : 'add']('hidden');
     }
     const styleVal = isCustom ? (els.qrColor?.value || '#000000') : (els.qrStyle?.value || 'default');
+    const sizeVal = els.qrSize?.value || 200;
 
     let resultItem;
     if (selectedDocId) {
@@ -252,6 +260,7 @@ els.form?.addEventListener('submit', async (event) => {
             active,
             ownerId: currentUserId,
             style: styleVal,
+            size: sizeVal,
             pixData: pixDataObj
         });
         // Retrieve updated item to show preview correctly
@@ -267,6 +276,7 @@ els.form?.addEventListener('submit', async (event) => {
             fixedUrl: fixedUrlForSave, 
             ownerId: currentUserId,
             style: styleVal,
+            size: sizeVal,
             pixData: pixDataObj
         });
         showAlert(els.alert, 'QR Code criado com sucesso!', 'success');
@@ -281,10 +291,13 @@ els.form?.addEventListener('submit', async (event) => {
     const valueForQr = isPix ? destinationToSave : (resultItem.fixedUrl || composeQrUrl(resultItem.id));
     
     if (els.qrUrl) els.qrUrl.textContent = isPix ? destinationToSave : displayUrl;
-    await drawStyledQR(valueForQr, styleVal, format);
+    await drawStyledQR(valueForQr, styleVal, format, sizeVal);
     
     els.preview.classList.remove('hidden');
     els.form.classList.add('hidden');
+    
+    // Refresh dashboard cost (since real-time was removed, we update on save)
+    loadDashboard();
     
   } catch (error) {
     showAlert(els.alert, 'Erro ao salvar QR Code.', 'error');
@@ -319,6 +332,8 @@ els.qrStyle?.addEventListener('change', () => {
   if (els.qrColor) {
      els.qrColor.classList[isCustom ? 'remove' : 'add']('hidden');
   }
+  // Force update when switching style type
+  updateProjectedCost();
 });
 // Listener for Color Change (optional real-time preview if we had one, but we don't have live preview in form yet)
 // We could add it if we want, but currently preview is generated on submit.
@@ -364,6 +379,42 @@ if (toggleSidebarBtn && sidebar && mainContent) {
     });
 }
 
+// Real-time pricing update
+function updateProjectedCost() {
+  if (isEditingPopulation) return;
+  if (!currentQRCodes) return;
+
+  const isActive = els.form.active.checked;
+  const isCustom = els.qrStyle.value === 'custom';
+  const styleVal = isCustom ? (els.qrColor?.value || '#000000') : (els.qrStyle?.value || 'default');
+  const sizeVal = els.qrSize?.value || 200;
+
+  const formQR = {
+      docId: selectedDocId || 'temp-new',
+      active: isActive,
+      style: styleVal,
+      size: sizeVal
+  };
+
+  let projectedList;
+  if (selectedDocId) {
+      // Edit mode: replace the existing item in the list
+      projectedList = currentQRCodes.map(qr => qr.docId === selectedDocId ? { ...qr, ...formQR } : qr);
+  } else {
+      // New mode: add to the list
+      projectedList = [...currentQRCodes, formQR];
+  }
+
+  updatePricingUI(projectedList);
+}
+
+// Add listeners for real-time cost updates
+els.form.active?.addEventListener('change', updateProjectedCost);
+els.qrStyle?.addEventListener('change', updateProjectedCost);
+els.qrColor?.addEventListener('input', updateProjectedCost);
+els.qrColor?.addEventListener('change', updateProjectedCost); // Ensure update on commit
+els.qrSize?.addEventListener('change', updateProjectedCost);
+
 // Restore sidebar state on load
 const savedSidebarState = localStorage.getItem('sidebarState');
 if (savedSidebarState === 'collapsed' && sidebar && mainContent) {
@@ -388,6 +439,7 @@ els.tableBody?.addEventListener('click', async (event) => {
 
     selectedDocId = docId;
     showNewQr();
+    isEditingPopulation = true;
     
     // Update header title
     const headerTitle = els.newQrView.querySelector('.card-title');
@@ -433,34 +485,44 @@ els.tableBody?.addEventListener('click', async (event) => {
       } else {
          els.qrStyle.value = savedStyle;
          if (els.qrColor) els.qrColor.classList.add('hidden');
-      }
-      els.qrStyle.dispatchEvent(new Event('change'));
     }
-    
-    // Fixed URL Fields (Disable/Populate)
-    if (els.fixedUser) els.fixedUser.disabled = true;
-    if (els.fixedSlug) {
-        els.fixedSlug.disabled = true;
-        els.fixedSlug.value = item.id || '';
-    }
-
-    // DRAW PREVIEW IMMEDIATELY
-    const displayUrl = (BASE_URL === window.location.origin)
-      ? composeQrUrl(item.id)
-      : (item.fixedUrl || composeQrUrl(item.id));
-    
-    // Determine the value to draw (PIX payload or URL)
-    const valueForQr = isPix ? dest : (item.fixedUrl || composeQrUrl(item.id));
-
-    if (els.qrUrl) els.qrUrl.textContent = isPix ? dest : displayUrl;
-    
-    // Draw
-    const format = (els.qrFormat?.value || 'png');
-    await drawStyledQR(valueForQr, styleVal, format);
-    els.preview.classList.remove('hidden');
-
-    return;
+    els.qrStyle.dispatchEvent(new Event('change'));
   }
+  
+  // Populate Size
+  if (els.qrSize) {
+      els.qrSize.value = item.size || 200;
+  }
+  
+  // Fixed URL Fields (Disable/Populate)
+  if (els.fixedUser) els.fixedUser.disabled = true;
+  if (els.fixedSlug) {
+      els.fixedSlug.disabled = true;
+      els.fixedSlug.value = item.id || '';
+  }
+
+  // DRAW PREVIEW IMMEDIATELY
+  const displayUrl = (BASE_URL === window.location.origin)
+    ? composeQrUrl(item.id)
+    : (item.fixedUrl || composeQrUrl(item.id));
+  
+  // Determine the value to draw (PIX payload or URL)
+  const valueForQr = isPix ? dest : (item.fixedUrl || composeQrUrl(item.id));
+
+  if (els.qrUrl) els.qrUrl.textContent = isPix ? dest : displayUrl;
+  
+  // Draw
+  const format = (els.qrFormat?.value || 'png');
+  const sizeVal = item.size || 200;
+  await drawStyledQR(valueForQr, styleVal, format, sizeVal);
+  els.preview.classList.remove('hidden');
+
+  // Trigger real-time update (re-implemented as requested for immediate feedback)
+  // updateProjectedCost(); // Removed as per user request to NOT update on edit start
+
+  isEditingPopulation = false;
+  return;
+}
 
   if (target.dataset.action === 'delete') {
     selectedDocId = docId;
@@ -566,7 +628,7 @@ els.tableBody?.addEventListener('click', async (event) => {
 els.confirmDelete?.addEventListener('click', async () => {
   if (!selectedDocId) return;
   els.confirmDelete.disabled = true;
-  els.confirmDelete.textContent = 'Excluindo...';
+  els.confirmDelete.innerHTML = '<span class="loading" style="width:16px;height:16px;border-width:2px;"></span> Excluindo...';
   try {
     await QRController.remove(selectedDocId);
     showAlert(els.alert, 'QR Code excluído.', 'success');
@@ -588,7 +650,14 @@ document.getElementById('closeQrPreview')?.addEventListener('click', () => toggl
 async function loadDashboard() {
   try {
     toggleState(els.loading, true);
+
+    const planCostEl = document.getElementById('planCost');
+    if (planCostEl) {
+      planCostEl.innerHTML = '<span class="loading" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Calculando...';
+    }
+
     const qrCodes = currentUserId ? await QRController.mine(currentUserId) : [];
+    currentQRCodes = qrCodes; // Update local store
     toggleState(els.loading, false);
 
     if (!qrCodes.length) {
