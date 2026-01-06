@@ -13,99 +13,183 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="brand-badge"><i class="fas fa-qrcode"></i></div>
-        <div>
-          <strong>Editar QR Code</strong>
-          <p style="color:var(--text-dim);">Atualize destino e status sempre que precisar.</p>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon"><i class="fas fa-qrcode"></i></div>
+        <div class="brand-text">
+          <h2>MeuQRCode</h2>
+          <span>Gerenciador</span>
         </div>
+        <button id="sidebarClose" class="sidebar-close-btn">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="header-actions">
-        <a href="dashboard.html" class="btn btn-secondary">Voltar</a>
-      </div>
-    </header>
+      
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="new.html" class="nav-item">
+          <i class="fas fa-plus-circle"></i>
+          <span>Novo QR Code</span>
+        </a>
+      </nav>
 
-    <section class="card">
-      <div class="card-header">
-        <h2 class="card-title">Detalhes</h2>
-      </div>
-      <div id="alert-container"></div>
-      <div id="loading" class="text-center" style="padding:2rem;">
-        <div class="loading" style="margin:auto;"></div>
-        <p style="color:var(--text-dim);">Buscando QR Code...</p>
-      </div>
-
-      <form id="qrForm" class="hidden" novalidate>
-        <div class="form-group">
-          <label for="title">Título *</label>
-          <input id="title" name="title" type="text" required />
-        </div>
-        <div class="form-group">
-          <label for="contentType">Tipo de conteúdo</label>
-          <select id="contentType" name="contentType">
-            <option value="text">Texto/Link</option>
-            <option value="pix">PIX</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="destination">Destino *</label>
-          <input id="destination" name="destination" type="text" required />
-        </div>
-        <div id="pixFields" class="hidden">
-          <div class="form-group">
-            <label for="pixKey">Chave PIX *</label>
-            <input id="pixKey" name="pixKey" type="text" placeholder="EVP, e-mail, telefone, CPF/CNPJ" />
-          </div>
-          <div class="form-group">
-            <label for="amount">Valor (opcional)</label>
-            <input id="amount" name="amount" type="number" step="0.01" placeholder="0.00" />
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar"><i class="fas fa-user"></i></div>
+          <div class="user-details">
+            <span id="userEmailDisplay" class="user-email"></span>
+            <span class="user-role">Admin</span>
           </div>
         </div>
-        <div class="form-group">
-          <label class="checkbox-inline">
-            <input type="checkbox" id="active" name="active" />
-            <span>QR Code ativo</span>
-          </label>
-        </div>
+        <button id="logoutBtn" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+      </div>
+    </aside>
 
-        <div class="form-group">
-          <label>Personalização</label>
-          <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
-            <div style="width: 80px;">
-              <label for="colorDark" style="font-size:0.8rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Cor</label>
-              <input type="color" id="colorDark" name="colorDark" class="input-color-modern" value="#000000" style="height:42px;" />
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebarToggle" class="menu-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-title">
+            <h1>Editar QR Code</h1>
+            <p class="text-muted">Atualize as configurações do seu QR Code</p>
+          </div>
+        </div>
+        
+        <div class="topbar-actions">
+          <a href="dashboard.html" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+          </a>
+        </div>
+      </header>
+
+      <div class="content-wrapper">
+        <div class="content-card" style="max-width: 800px; margin: 0 auto;">
+          <div class="card-header-clean">
+             <h2 class="section-title">Detalhes do QR Code</h2>
+          </div>
+          
+          <div style="padding: 2rem;">
+            <div id="alert-container"></div>
+            
+            <div id="loading" class="text-center" style="padding:2rem;">
+              <div class="loading"></div>
+              <p style="color:var(--text-dim); margin-top: 1rem;">Carregando dados...</p>
             </div>
-            <div style="width: 80px;">
-              <label for="colorLight" style="font-size:0.8rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Fundo</label>
-              <input type="color" id="colorLight" name="colorLight" class="input-color-modern" value="#FFFFFF" style="height:42px;" />
-            </div>
-            <div style="flex:1; min-width:160px;">
-              <label for="qrSize" style="font-size:0.8rem; color:var(--text-dim); display:block; margin-bottom:0.25rem;">Tamanho</label>
-              <select id="qrSize" name="qrSize" style="height:42px;">
-                <option value="200">Pequeno (200px)</option>
-                <option value="320">Médio (320px)</option>
-                <option value="480">Grande (480px)</option>
-                <option value="640">Extra (640px)</option>
-              </select>
+
+            <form id="qrForm" class="hidden" novalidate>
+              <div class="form-group">
+                <label for="title">Título *</label>
+                <input id="title" name="title" type="text" required placeholder="Ex: Menu do Restaurante" />
+              </div>
+
+              <div class="form-group">
+                <label for="contentType">Tipo de conteúdo</label>
+                <select id="contentType" name="contentType">
+                  <option value="text">Texto/Link</option>
+                  <option value="pix">PIX</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="destination">Destino *</label>
+                <input id="destination" name="destination" type="text" required placeholder="https://..." />
+              </div>
+
+              <div id="pixFields" class="hidden" style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                <h4 style="margin-bottom: 1rem;">Dados do PIX</h4>
+                <div class="form-group">
+                  <label for="pixKey">Chave PIX *</label>
+                  <input id="pixKey" name="pixKey" type="text" placeholder="EVP, e-mail, telefone, CPF/CNPJ" />
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group">
+                    <label for="merchantName">Nome do Recebedor *</label>
+                    <input id="merchantName" name="merchantName" type="text" placeholder="Nome completo" />
+                  </div>
+                  <div class="form-group">
+                    <label for="merchantCity">Cidade *</label>
+                    <input id="merchantCity" name="merchantCity" type="text" placeholder="Cidade" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="amount">Valor (opcional)</label>
+                  <input id="amount" name="amount" type="number" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="txid">Identificador da Transação (TXID)</label>
+                  <input id="txid" name="txid" type="text" placeholder="***" />
+                </div>
+                <div class="form-group">
+                  <label for="description">Descrição (opcional)</label>
+                  <input id="description" name="description" type="text" placeholder="Descrição do pagamento" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="checkbox-inline" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" id="active" name="active" style="width: auto;" />
+                  <span>QR Code ativo</span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label>Personalização Visual</label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                  <div>
+                    <label for="colorDark" style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.25rem; display:block;">Cor dos Módulos</label>
+                    <input type="color" id="colorDark" name="colorDark" class="input-color-modern" value="#000000" />
+                  </div>
+                  <div>
+                    <label for="colorLight" style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.25rem; display:block;">Cor do Fundo</label>
+                    <input type="color" id="colorLight" name="colorLight" class="input-color-modern" value="#FFFFFF" />
+                  </div>
+                  <div>
+                    <label for="qrSize" style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.25rem; display:block;">Tamanho (px)</label>
+                    <select id="qrSize" name="qrSize" style="height: 42px;">
+                      <option value="200">200px (Pequeno)</option>
+                      <option value="320">320px (Padrão)</option>
+                      <option value="480">480px (Grande)</option>
+                      <option value="640">640px (Extra)</option>
+                      <option value="1000">1000px (Máximo)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 2rem;">
+                <button type="submit" class="btn btn-primary" id="submitBtn" style="width: 100%; padding: 1rem;">
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+
+            <div id="qrPreview" class="qr-preview hidden" style="text-align: center; margin-top: 2rem;">
+              <h3 style="margin-bottom: 1rem;">Visualização atualizada</h3>
+              <canvas id="qrCanvas" style="border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></canvas>
+              <p style="color:var(--text-dim); margin: 1rem 0; word-break: break-all;">
+                URL atual:<br /><code id="qrUrl" style="background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px;"></code>
+              </p>
+              <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button type="button" class="btn btn-primary" id="downloadBtn"><i class="fas fa-download"></i> Baixar Imagem</button>
+                <a href="dashboard.html" class="btn btn-secondary">Voltar ao Painel</a>
+              </div>
             </div>
           </div>
         </div>
-
-        <button type="submit" class="btn btn-primary" id="submitBtn">Salvar Alterações</button>
-      </form>
-
-      <div id="qrPreview" class="qr-preview hidden">
-        <h3>Visualização atualizada</h3>
-        <canvas id="qrCanvas"></canvas>
-        <p style="color:var(--text-dim); text-align:center;">
-          URL atual:<br /><code id="qrUrl"></code>
-        </p>
-        <button type="button" class="btn btn-success" id="downloadBtn">Baixar QR Code</button>
-        <a href="dashboard.html" class="btn btn-secondary">Voltar ao painel</a>
       </div>
-    </section>
+    </main>
   </div>
 
   <script type="module" src="../assets/js/pages/edit.js"></script>

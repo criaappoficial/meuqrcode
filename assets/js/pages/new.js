@@ -53,7 +53,31 @@ observeAuth((user) => {
     })();
     badge.textContent = initials || 'QR';
   }
+
+  const emailDisplay = document.getElementById('userEmailDisplay');
+  if (emailDisplay) emailDisplay.textContent = user?.email || 'Usuário';
 }, () => window.location.replace('../login.html'));
+
+// Sidebar Logic
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const sidebar = document.querySelector('.sidebar');
+
+sidebarToggle?.addEventListener('click', () => {
+  sidebar.classList.toggle('active');
+  sidebarOverlay.classList.toggle('active');
+});
+
+sidebarOverlay?.addEventListener('click', () => {
+  sidebar.classList.remove('active');
+  sidebarOverlay.classList.remove('active');
+});
+
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn?.addEventListener('click', async () => {
+  await logoutUser();
+  window.location.replace('../login.html');
+});
 
 const toSlug = (value) =>
   (value || '')

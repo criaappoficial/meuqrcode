@@ -12,93 +12,205 @@
   <link rel="stylesheet" href="../assets/css/styles.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="brand-badge"><i class="fas fa-qrcode"></i></div>
-        <div>
-          <strong id="appTitle">QR Code Manager</strong>
-          
-          <p id="greeting" style="color:var(--text-dim); font-size:.75rem; margin-top: 5px;"></p>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon"><i class="fas fa-qrcode"></i></div>
+        <div class="brand-text">
+          <h2>MeuQRCode</h2>
+          <span>Gerenciador</span>
         </div>
+        <button id="sidebarMinimize" class="sidebar-minimize-btn" title="Minimizar Menu">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="sidebarClose" class="sidebar-close-btn">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <div class="header-actions">
-        <div id="balanceTrigger" class="balance-card">
-          <div class="balance-icon">💰</div>
-          <div class="balance-info">
-            <span class="balance-label">Adicionais</span>
-            <strong id="headerBalanceTotal" class="balance-value">R$ 0,00</strong>
+      
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="new.html" class="nav-item">
+          <i class="fas fa-plus-circle"></i>
+          <span>Novo QR Code</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-chart-pie"></i>
+          <span>Relatórios</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-cog"></i>
+          <span>Configurações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar"><i class="fas fa-user"></i></div>
+          <div class="user-details">
+            <span id="userEmailDisplay" class="user-email"></span>
+            <span class="user-role">Admin</span>
           </div>
         </div>
-        <button class="btn btn-secondary" id="logoutBtn">Sair</button>
-        <a href="new.html" class="btn btn-primary">+ Novo QR Code</a>
+        <button id="logoutBtn" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+      </div>
+    </aside>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebarToggle" class="menu-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-title">
+            <h1>Dashboard</h1>
+            <p id="greeting" class="text-muted"></p>
+          </div>
+        </div>
         
+        <div class="topbar-actions">
+          <div id="balanceTrigger" class="balance-badge">
+            <span class="currency">R$</span>
+            <span id="headerBalanceTotal" class="amount">0,00</span>
+          </div>
+        </div>
       </header>
 
-    <!-- Painel Lateral da Calculadora -->
-    <div id="calcPanel" class="calc-panel">
-      <div class="calc-header">
-        <h3>Resumo de Custos</h3>
-        <button id="closeCalc" class="icon-button-sm">✕</button>
+      <div class="content-wrapper">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card card-green">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Ativos</span>
+              <h3 id="statActive">0</h3>
+              <span class="stat-desc">QR Codes funcionais</span>
+            </div>
+          </div>
+          
+          <div class="stat-card card-yellow">
+            <div class="stat-icon"><i class="fas fa-pause-circle"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Pausados</span>
+              <h3 id="statInactive">0</h3>
+              <span class="stat-desc">Aguardando ativação</span>
+            </div>
+          </div>
+          
+          <div class="stat-card card-red">
+            <div class="stat-icon"><i class="fas fa-palette"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Customizados</span>
+              <h3 id="statCustom">0</h3>
+              <span class="stat-desc">Com cores/tamanhos</span>
+            </div>
+          </div>
+          
+          <div class="stat-card card-blue">
+            <div class="stat-icon"><i class="fas fa-link"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total</span>
+              <h3 id="statTotal">0</h3>
+              <span class="stat-desc">Base de QR Codes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Code List -->
+        <section class="content-card">
+          <div class="card-header-clean">
+            <div>
+              <h2 class="section-title">Meus QR Codes</h2>
+              <p id="dashboardTagline" class="text-muted"></p>
+            </div>
+            <div class="header-actions">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar QR Code...">
+              </div>
+              <select id="statusFilter" class="filter-select">
+                <option value="all">Todos os Status</option>
+                <option value="active">Ativos</option>
+                <option value="inactive">Pausados</option>
+              </select>
+              <a href="new.html" class="btn btn-primary-sm">+ Novo</a>
+            </div>
+          </div>
+
+          <div id="alert-container"></div>
+          
+          <div id="loading" class="text-center" style="padding:3rem;">
+            <div class="loading-spinner"></div>
+            <p class="mt-2 text-muted">Carregando dados...</p>
+          </div>
+
+          <div id="qrcodes-container" class="hidden">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Destino</th>
+                    <th>Visualização</th>
+                    <th>Status</th>
+                    <th>Criado em</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="qrcodes-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="empty-state" class="empty-state hidden">
+            <div class="empty-icon">✨</div>
+            <h3>Nenhum QR Code encontrado</h3>
+            <p>Crie seu primeiro QR Code agora mesmo.</p>
+            <a href="new.html" class="btn btn-primary mt-3">Criar Agora</a>
+          </div>
+        </section>
       </div>
-      <div class="calc-body">
-        <div class="calc-row">
-          <span>Links dinâmicos incluídos</span>
-          <span id="calcIncludedLinks" class="font-mono">0</span>
-        </div>
-        <div class="calc-row">
-          <span>Links adicionais</span>
-          <span id="calcExtraLinks" class="font-mono">0</span>
-        </div>
-        <div class="calc-row">
-          <span>Cores personalizadas</span>
-          <span id="calcExtraColors" class="font-mono">0</span>
-        </div>
-        <div class="calc-row">
-          <span>Tamanhos personalizados</span>
-          <span id="calcExtraSizes" class="font-mono">0</span>
-        </div>
-        <div class="calc-divider"></div>
-        <div class="calc-row total">
-          <span>Total Adicional</span>
-          <strong id="calcTotal">R$ 0,00</strong>
-        </div>
+    </main>
+  </div>
+
+  <!-- Painel Lateral da Calculadora -->
+  <div id="calcPanel" class="calc-panel">
+    <div class="calc-header">
+      <h3>Resumo de Custos</h3>
+      <button id="closeCalc" class="icon-button-sm">✕</button>
+    </div>
+    <div class="calc-body">
+      <div class="calc-row">
+        <span>Links dinâmicos incluídos</span>
+        <span id="calcIncludedLinks" class="font-mono">0</span>
+      </div>
+      <div class="calc-row">
+        <span>Links adicionais</span>
+        <span id="calcExtraLinks" class="font-mono">0</span>
+      </div>
+      <div class="calc-row">
+        <span>Cores personalizadas</span>
+        <span id="calcExtraColors" class="font-mono">0</span>
+      </div>
+      <div class="calc-row">
+        <span>Tamanhos personalizados</span>
+        <span id="calcExtraSizes" class="font-mono">0</span>
+      </div>
+      <div class="calc-divider"></div>
+      <div class="calc-row total">
+        <span>Total Adicional</span>
+        <strong id="calcTotal">R$ 0,00</strong>
       </div>
     </div>
-
-    <section class="card">
-      <div class="card-header">
-        <h2 class="card-title">Coleção de QR Codes</h2>
-        <p id="dashboardTagline" style="color:var(--text-dim);"></p>
-      </div>
-      <div id="alert-container"></div>
-      <div id="loading" class="text-center" style="padding:2rem;">
-        <div class="loading" style="margin:auto;"></div>
-        <p style="margin-top:1rem; color:var(--text-dim);">Carregando QR Codes...</p>
-      </div>
-      <div id="qrcodes-container" class="hidden">
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Destino</th>
-                <th>QR</th>
-                <th>Status</th>
-                <th>Criado em</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="qrcodes-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-      <div id="empty-state" class="empty-state hidden">
-        <div class="empty-state-icon">✨</div>
-        <h3>Nenhum QR Code ainda</h3>
-        <p style="color:var(--text-dim);">Clique em "Novo QR Code" para começar.</p>
-      </div>
-    </section>
   </div>
 
   <div id="deleteModal" class="modal-overlay hidden">
@@ -115,22 +227,20 @@
     </div>
   </div>
 
-  
-      <div id="qrPreviewModal" class="modal-overlay hidden">
-        <div class="modal">
-          <div class="modal-header">
-            <h3 class="modal-title">Pré-visualização do QR Code</h3>
-            <button class="modal-close" id="closeQrPreview">×</button>
-          </div>
-          <div class="modal-body" style="text-align:center;">
-            <canvas id="qrPreviewCanvas"></canvas>
-            <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
-              <small id="qrPreviewUrl"></small>
-            </p>
-            <!-- button class="btn btn-secondary" id="printQrFromModal" style="margin-top: 1rem;">🖨️ Imprimir</button -->
-          </div>
-        </div>
+  <div id="qrPreviewModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Pré-visualização do QR Code</h3>
+        <button class="modal-close" id="closeQrPreview">×</button>
       </div>
+      <div class="modal-body" style="text-align:center;">
+        <canvas id="qrPreviewCanvas"></canvas>
+        <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
+          <small id="qrPreviewUrl"></small>
+        </p>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script type="module" src="../assets/js/pages/dashboard.js"></script>
