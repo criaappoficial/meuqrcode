@@ -20,11 +20,28 @@ const els = {
   cancelDelete: document.getElementById('cancelDelete'),
   qrPreviewModal: document.getElementById('qrPreviewModal'),
   qrPreviewUrl: document.getElementById('qrPreviewUrl'),
-  qrPreviewCanvas: document.getElementById('qrPreviewCanvas')
+  qrPreviewCanvas: document.getElementById('qrPreviewCanvas'),
+  openCalc: document.getElementById('openCalc'),
+  closeCalc: document.getElementById('closeCalc'),
+  calcPanel: document.getElementById('calcPanel'),
+  calcIncludedLinks: document.getElementById('calcIncludedLinks'),
+  calcExtraLinks: document.getElementById('calcExtraLinks'),
+  calcExtraColors: document.getElementById('calcExtraColors'),
+  calcExtraSizes: document.getElementById('calcExtraSizes'),
+  calcTotal: document.getElementById('calcTotal')
 };
 
 let selectedDocId = null;
 let currentUserId = null;
+let currentQrCodes = [];
+const BASE_RULES = {
+  includedLinks: 3,
+  baseStyles: ['dark', 'invert'],
+  baseSizes: [200, 320],
+  pricePerExtraLink: 5.0,
+  pricePerExtraColor: 2.5,
+  pricePerExtraSize: 4.0
+};
 
 observeAuth((user) => {
   currentUserId = user?.uid || null;
@@ -54,6 +71,9 @@ observeAuth((user) => {
   }
   loadDashboard();
 }, () => window.location.replace('../login.html'));
+
+els.openCalc?.addEventListener('click', () => toggleState(els.calcPanel, true));
+els.closeCalc?.addEventListener('click', () => toggleState(els.calcPanel, false));
 
 els.logoutBtn?.addEventListener('click', async () => {
   await logoutUser();
@@ -157,11 +177,15 @@ async function loadDashboard() {
     if (!qrCodes.length) {
       toggleState(els.emptyState, true);
       toggleState(els.tableWrap, false);
+      currentQrCodes = [];
+      updateCalculator();
       return;
     }
 
     toggleState(els.emptyState, false);
     toggleState(els.tableWrap, true);
+    currentQrCodes = qrCodes.slice();
+    updateCalculator();
 
     renderRows(els.tableBody, qrCodes, (qr) => `
       <tr>
@@ -191,4 +215,22 @@ async function loadDashboard() {
 
 function truncate(text = '', size = 48) {
   return text.length > size ? `${text.substring(0, size)}…` : text;
+}
+
+function currency(value) {
+  return `R$ ${value.toFixed(2).replace('.', ',')}`;
+}
+
+function updateCalculator() {
+  if (!els.calcIncludedLinks) return;
+  const totalLinks = currentQrCodes.length;
+  const extraLinks = Math.max(0, totalLinks - BASE_RULES.includedLinks);
+  const extraColors = currentQrCodes.filter((qr) => !BASE_RULES.baseStyles.includes((qr.style || 'dark'))).length;
+  const extraSizes = currentQrCodes.filter((qr) => !BASE_RULES.baseSizes.includes(parseInt(qr.size || 320, 10))).length;
+  const total = (extraLinks * BASE_RULES.pricePerExtraLink) + (extraColors * BASE_RULES.pricePerExtraColor) + (extraSizes * BASE_RULES.pricePerExtraSize);
+  els.calcIncludedLinks.textContent = String(BASE_RULES.includedLinks);
+  els.calcExtraLinks.textContent = String(extraLinks);
+  els.calcExtraColors.textContent = String(extraColors);
+  els.calcExtraSizes.textContent = String(extraSizes);
+  els.calcTotal.textContent = currency(total);
 }
