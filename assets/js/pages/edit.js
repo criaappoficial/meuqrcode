@@ -1,4 +1,4 @@
-import { observeAuth } from '../controllers/authController.js';
+import { observeAuth, logoutUser } from '../controllers/authController.js';
 import { QRController, drawQRCode, downloadQRCode } from '../controllers/qrController.js';
 import { showAlert } from '../views/ui.js';
 
@@ -237,6 +237,19 @@ if (toggleSidebarBtn && sidebar && mainContent) {
         // Save state
         const isCollapsed = sidebar.classList.contains('collapsed');
         localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
+    });
+}
+
+// Logout logic
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await logoutUser();
+            window.location.replace('../login.html');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     });
 }
 

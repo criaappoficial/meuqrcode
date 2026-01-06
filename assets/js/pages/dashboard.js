@@ -1,5 +1,5 @@
 import { observeAuth, logoutUser } from '../controllers/authController.js';
-import { QRController, drawQRCode, downloadQRCode } from '../controllers/qrController.js';
+import { QRController, drawQRCode, downloadQRCode, drawQRCodeSvg, downloadQRCodeSvg } from '../controllers/qrController.js';
 import { PricingModel } from '../models/pricingModel.js';
 import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
 
@@ -23,11 +23,64 @@ const els = {
   cancelDelete: document.getElementById('cancelDelete'),
   qrPreviewModal: document.getElementById('qrPreviewModal'),
   qrPreviewUrl: document.getElementById('qrPreviewUrl'),
-  qrPreviewCanvas: document.getElementById('qrPreviewCanvas')
+  qrPreviewCanvas: document.getElementById('qrPreviewCanvas'),
+  
+  // Views
+  dashboardView: document.getElementById('dashboard-view'),
+  newQrView: document.getElementById('new-qr-view'),
+  btnNewQr: document.getElementById('btn-new-qr'),
+  btnBackDashboard: document.getElementById('btn-back-dashboard'),
+  btnBackDashboard2: document.getElementById('btn-back-dashboard-2'),
+  
+  // Form
+  form: document.getElementById('qrForm'),
+  submitBtn: document.getElementById('submitBtn'),
+  preview: document.getElementById('qrPreview'),
+  qrUrl: document.getElementById('qrUrl'),
+  fixedUser: document.getElementById('fixedUser'),
+  fixedSlug: document.getElementById('fixedSlug'),
+  qrStyle: document.getElementById('qrStyle'),
+  qrColor: document.getElementById('qrColor'),
+  qrFormat: document.getElementById('qrFormat'),
+  qrSvgWrap: document.getElementById('qrSvgWrap'),
+  contentType: document.getElementById('contentType'),
+  pixFields: document.getElementById('pixFields'),
+  pixKey: document.getElementById('pixKey'),
+  merchantName: document.getElementById('merchantName'),
+  merchantCity: document.getElementById('merchantCity'),
+  amount: document.getElementById('amount'),
+  txid: document.getElementById('txid'),
+  description: document.getElementById('description'),
+  downloadBtn: document.getElementById('downloadBtn')
 };
+
+// Toggle Views
+const showDashboard = () => {
+  els.newQrView.classList.add('hidden');
+  els.dashboardView.classList.remove('hidden');
+  loadDashboard(); // Refresh data
+};
+
+const showNewQr = () => {
+  els.dashboardView.classList.add('hidden');
+  els.newQrView.classList.remove('hidden');
+  // Reset form
+  els.form.reset();
+  els.preview.classList.add('hidden');
+  els.form.classList.remove('hidden');
+  els.submitBtn.disabled = false;
+  els.submitBtn.textContent = 'Criar QR Code';
+  // Trigger content type change to set visibility correct
+  els.contentType.dispatchEvent(new Event('change'));
+};
+
+els.btnNewQr?.addEventListener('click', showNewQr);
+els.btnBackDashboard?.addEventListener('click', showDashboard);
+els.btnBackDashboard2?.addEventListener('click', showDashboard);
 
 let selectedDocId = null;
 let currentUserId = null;
+
 
 observeAuth((user) => {
   currentUserId = user?.uid || null;
@@ -45,20 +98,204 @@ observeAuth((user) => {
   if (greetingEl) greetingEl.textContent = greetingText;
   const taglineEl = document.getElementById('dashboardTagline');
   if (taglineEl) taglineEl.textContent = greetingText;
-  /*
-  const badge = document.querySelector('.brand-badge');
-  if (badge) {
-    const initials = (() => {
-      const display = user?.displayName || '';
-      if (display.trim()) return display.trim().split(/\s+/).slice(0, 2).map(s => s[0]?.toUpperCase() || '').join('');
-      const email = (user?.email || '').split('@')[0];
-      return (email.slice(0, 2) || 'QR').toUpperCase();
-    })();
-    badge.textContent = initials || 'QR';
-  }
-  */
   loadDashboard();
 }, () => window.location.replace('../login.html'));
+
+// =========================================================
+// Helpers from new.js (moved here for single-page experience)
+// =========================================================
+const toSlug = (value) =>
+  (value || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-]/g, '');
+
+const getContent = (value = '') => (value || '').trim();
+const uniqueSuffix = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 4)).slice(-6);
+
+function pad(n) { return n.toString().padStart(2, '0'); }
+function tlv(id, value) { const v = String(value || ''); return id + pad(v.length) + v; }
+function crc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
+      crc &= 0xFFFF;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+function buildPixPayload({ pixKey, merchantName, merchantCity, amount, txid, description }) {
+  const sanitizeText = (s = '', max = 25) => {
+    const t = (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase().replace(/[^A-Z0-9 \-\.]/g, ' ').trim();
+    return t.slice(0, max);
+  };
+  const sanitizeTxid = (s = '') => (s || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 25);
+  const nmSan = sanitizeText(merchantName, 25);
+  const citySan = sanitizeText(merchantCity, 15);
+  const descSan = (description || '').toString().slice(0, 40);
+  const txidSan = sanitizeTxid(txid);
+
+  const acc = tlv('26', tlv('00', 'br.gov.bcb.pix') + tlv('01', pixKey) + (descSan ? tlv('02', descSan) : ''));
+  const mcc = tlv('52', '0000');
+  const cur = tlv('53', '986');
+  const amt = amount ? tlv('54', String(parseFloat(amount).toFixed(2))) : '';
+  const cty = tlv('58', 'BR');
+  const nm = tlv('59', nmSan);
+  const city = tlv('60', citySan);
+  const add = txidSan ? tlv('62', tlv('05', txidSan)) : '';
+  const base = tlv('00', '01') + tlv('01', '11') + acc + mcc + cur + amt + cty + nm + city + add + '6304';
+  const crc = crc16(base);
+  return base + crc;
+}
+
+function drawStyledQR(value, style = 'default', format = 'png') {
+  const optionsByStyle = {
+    default: { color: { dark: '#050814', light: '#FFFFFF' } },
+    dark: { color: { dark: '#000000', light: '#FFFFFF' } },
+    light: { color: { dark: '#333333', light: '#FAFAFA' } },
+    blue: { color: { dark: '#1f4ed8', light: '#FFFFFF' } }
+  };
+  
+  let opts;
+  if (style && style.startsWith('#')) {
+    opts = { color: { dark: style, light: '#FFFFFF' } };
+  } else {
+    opts = optionsByStyle[style] || optionsByStyle.default;
+  }
+
+  if (format === 'svg') {
+    return drawQRCodeSvg('qrSvgWrap', value, opts).then(() => {
+      if (els.qrSvgWrap) els.qrSvgWrap.style.display = 'block';
+      if (els.qrPreviewCanvas) els.qrPreviewCanvas.style.display = 'none';
+    });
+  }
+  if (els.qrSvgWrap) els.qrSvgWrap.style.display = 'none';
+  if (els.qrPreviewCanvas) els.qrPreviewCanvas.style.display = 'block';
+  return drawQRCode('qrCanvas', value, opts);
+}
+
+// =========================================================
+// Form Logic (New QR)
+// =========================================================
+els.form?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const title = els.form.title.value;
+  const isPix = els.contentType?.value === 'pix';
+  const destination = isPix ? '' : getContent(els.form.destination.value);
+  const active = els.form.active.checked;
+  
+  if (!destination && !isPix) {
+    showAlert(els.alert, 'Informe o conteúdo do QR (texto, link, pix, email, etc.).', 'error');
+    return;
+  }
+  if (isPix) {
+    if (!els.pixKey?.value || !els.merchantName?.value || !els.merchantCity?.value) {
+      showAlert(els.alert, 'Preencha chave, nome e cidade para PIX.', 'error');
+      return;
+    }
+  }
+
+  const userPartRaw = toSlug(els.fixedUser?.value) || 'meus-servicos';
+  const rawSlug = els.fixedSlug?.value || '';
+  const isUrlLike = /^https?:/i.test(rawSlug) || rawSlug.includes('.');
+  const slugPartRaw = isUrlLike ? '' : toSlug(rawSlug);
+  const userPart = userPartRaw.replace(/-/g, '');
+  const fixedId = slugPartRaw ? slugPartRaw : `${userPart}${uniqueSuffix()}`;
+  const fixedUrlForSave = `${PRIMARY_DOMAIN}/${fixedId}`;
+
+  els.submitBtn.disabled = true;
+  els.submitBtn.innerHTML = '<span class="loading"></span> Gerando...';
+
+  try {
+    const destinationToSave = isPix ? buildPixPayload({
+      pixKey: els.pixKey.value,
+      merchantName: els.merchantName.value,
+      merchantCity: els.merchantCity.value,
+      amount: els.amount.value,
+      txid: els.txid.value,
+      description: els.description.value
+    }) : destination;
+    
+  const isCustom = els.qrStyle.value === 'custom';
+  if (els.qrColor) {
+     els.qrColor.classList[isCustom ? 'remove' : 'add']('hidden');
+  }
+  const styleVal = isCustom ? (els.qrColor?.value || '#000000') : (els.qrStyle?.value || 'default');
+
+  const created = await QRController.create({ 
+      title, 
+      destination: destinationToSave, 
+      active, 
+      id: fixedId, 
+      fixedUrl: fixedUrlForSave, 
+      ownerId: currentUserId,
+      style: styleVal
+    });
+    
+    const displayUrl = (BASE_URL === window.location.origin)
+      ? composeQrUrl(created.id)
+      : (created.fixedUrl || composeQrUrl(created.id));
+      
+    const format = (els.qrFormat?.value || 'png');
+    const pixPayload = isPix ? buildPixPayload({
+      pixKey: els.pixKey.value,
+      merchantName: els.merchantName.value,
+      merchantCity: els.merchantCity.value,
+      amount: els.amount.value,
+      txid: els.txid.value,
+      description: els.description.value
+    }) : null;
+    
+    const valueForQr = isPix ? pixPayload : (created.fixedUrl || composeQrUrl(created.id));
+    
+    if (els.qrUrl) els.qrUrl.textContent = isPix ? pixPayload : displayUrl;
+    await drawStyledQR(valueForQr, styleVal, format);
+    
+    els.preview.classList.remove('hidden');
+    els.form.classList.add('hidden');
+    showAlert(els.alert, 'QR Code criado com sucesso!', 'success');
+  } catch (error) {
+    showAlert(els.alert, 'Erro ao criar QR Code.', 'error');
+    els.submitBtn.disabled = false;
+    els.submitBtn.textContent = 'Criar QR Code';
+    console.error(error);
+  }
+});
+
+els.contentType?.addEventListener('change', () => {
+  const isPix = els.contentType.value === 'pix';
+  if (els.pixFields) els.pixFields.classList[isPix ? 'remove' : 'add']('hidden');
+  const destGroup = document.getElementById('destinationGroup');
+  if (destGroup) destGroup.classList[isPix ? 'add' : 'remove']('hidden');
+  const destInput = document.getElementById('destination');
+  if (destInput) destInput.required = !isPix;
+});
+
+els.downloadBtn?.addEventListener('click', () => {
+  const format = (els.qrFormat?.value || 'png');
+  const filenameBase = (els.form.title.value || 'qrcode').replace(/\s+/g, '-').toLowerCase();
+  if (format === 'svg') {
+    downloadQRCodeSvg('qrSvgWrap', `${filenameBase}.svg`);
+  } else {
+    downloadQRCode('qrCanvas', `${filenameBase}.png`);
+  }
+});
+
+// Listener for Style Change
+els.qrStyle?.addEventListener('change', () => {
+  const isCustom = els.qrStyle.value === 'custom';
+  if (els.qrColor) {
+     els.qrColor.classList[isCustom ? 'remove' : 'add']('hidden');
+  }
+});
+// Listener for Color Change (optional real-time preview if we had one, but we don't have live preview in form yet)
+// We could add it if we want, but currently preview is generated on submit.
+
 
 const logoutBtn = document.getElementById('logoutBtnSidebar') || document.getElementById('logoutBtn');
 logoutBtn?.addEventListener('click', async () => {
@@ -217,16 +454,25 @@ async function loadDashboard() {
         <td>${qr.title || 'Sem título'}</td>
         <td class="col-destination"><a href="${qr.destination}" target="_blank">${truncate(qr.destination)}</a></td>
         <td class="col-qr">
-          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">🔍</button>
+          <button class="icon-button" title="Ver QR Code" data-action="preview" data-id="${qr.docId}" data-title="${qr.title}" data-destination="${qr.destination}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">
+            <i class="fas fa-eye"></i>
+          </button>
         </td>
         <td><span class="badge ${qr.active ? 'badge-active' : 'badge-inactive'}">${qr.active ? 'Ativo' : 'Inativo'}</span></td>
-        <td>${formatDate(qr.createdAt)}</td>
-        <td>
+        <td class="col-actions">
           <div class="actions">
-            <button class="icon-button" title="Editar" data-action="edit" data-id="${qr.docId}" data-title="${qr.title}">✏️</button>
-            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">📥</button>
-            <button class="icon-button" title="Imprimir QR Code" data-action="print" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">🖨️</button>
-            <button class="icon-button" title="Excluir" data-action="delete" data-id="${qr.docId}" data-title="${qr.title}">🗑</button>
+            <button class="icon-button" title="Editar" data-action="edit" data-id="${qr.docId}" data-title="${qr.title}">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="icon-button" title="Baixar QR Code" data-action="download" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">
+              <i class="fas fa-download"></i>
+            </button>
+            <button class="icon-button" title="Imprimir QR Code" data-action="print" data-id="${qr.docId}" data-title="${qr.title}" data-public-id="${qr.id}" data-fixed-url="${qr.fixedUrl || ''}">
+              <i class="fas fa-print"></i>
+            </button>
+            <button class="icon-button" title="Excluir" data-action="delete" data-id="${qr.docId}" data-title="${qr.title}">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
         </td>
       </tr>

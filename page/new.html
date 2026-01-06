@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../assets/css/styles.css?v=7" />
+  <link rel="stylesheet" href="../assets/css/styles.css?v=8" />
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
@@ -58,14 +58,27 @@
 
     <!-- Main Content -->
     <main class="main-content">
+      <div class="top-navbar">
+        <div class="navbar-left">
+          <h1 id="appTitle">Novo QR Code</h1>
+          <p id="greeting" style="color:var(--text-dim); font-size:0.9rem; margin-top: 4px;"></p>
+        </div>
+        
+        <div class="navbar-right">
+          <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+            <i class="fas fa-arrow-left"></i> Voltar
+          </a>
+          <div class="user-info">
+            <div class="brand-badge" style="width:40px; height:40px; font-size:1rem;">
+              <i class="fas fa-user"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="alert-container"></div>
 
       <section class="card">
-        <div class="card-header">
-          <h2 class="card-title">Novo QR Code</h2>
-          <a href="dashboard.html" class="btn btn-secondary">Voltar</a>
-        </div>
-
         <form id="qrForm" novalidate>
           <div class="form-group">
             <label for="title">Título *</label>
