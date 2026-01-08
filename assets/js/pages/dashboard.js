@@ -99,6 +99,13 @@ const showNewQr = () => {
 };
 
 els.btnNewQr?.addEventListener('click', () => {
+  // Check if user is VIP
+  const isVip = VIP_EMAILS.includes(currentUserEmail);
+  if (isVip) {
+      showNewQr();
+      return;
+  }
+
   // Block creation - Show Modal
   if (els.blockModal) {
     els.blockModal.classList.remove('hidden');
@@ -113,12 +120,20 @@ els.btnBackDashboard2?.addEventListener('click', showDashboard);
 
 let selectedDocId = null;
 let currentUserId = null;
+let currentUserEmail = null; // Store for VIP check
 let currentQRCodes = []; // Store locally for real-time pricing calculation
 let isEditingPopulation = false; // Flag to prevent cost updates during edit population
 
+// VIP Whitelist - Add emails here to bypass the block
+const VIP_EMAILS = [
+  'admin@example.com',
+  'suporte@meuqrcode.com',
+  'fernandoamerico2@gmail.com'
+];
 
 observeAuth((user) => {
   currentUserId = user?.uid || null;
+  currentUserEmail = user?.email || null;
   const hour = new Date().getHours();
   const saudacao = (hour >= 5 && hour < 12) ? 'Bom dia' : (hour >= 12 && hour < 18) ? 'Boa tarde' : 'Boa noite';
   const shortName = (() => {
@@ -454,12 +469,16 @@ els.tableBody?.addEventListener('click', async (event) => {
   const publicId = target.dataset.publicId;
 
   if (target.dataset.action === 'edit') {
-    // Block Edit - Show Modal
-    if (els.blockModal) {
-      els.blockModal.classList.remove('hidden');
-      return;
+    // Check if user is VIP
+    const isVip = VIP_EMAILS.includes(currentUserEmail);
+    if (!isVip) {
+      // Block Edit - Show Modal
+      if (els.blockModal) {
+        els.blockModal.classList.remove('hidden');
+        return;
+      }
     }
-    // Fallback logic if modal missing
+    // Fallback logic if modal missing or is VIP
     const item = await QRController.find(docId);
     if (!item) {
         showAlert(els.alert, 'Item não encontrado para edição.', 'error');
