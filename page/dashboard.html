@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/styles.css?v=8" />
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
   <div class="app-layout">
@@ -340,6 +339,36 @@
         <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
           <small id="qrPreviewUrl"></small>
         </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="blockModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Aviso do Sistema</h3>
+        <button class="modal-close" id="closeBlockModal">×</button>
+      </div>
+      <div class="modal-body" style="text-align: center; padding: 2rem 1rem;">
+        <div style="margin-bottom: 1.5rem;">
+          <i class="fas fa-info-circle" style="font-size: 4rem; color: var(--primary);"></i>
+        </div>
+        <h4 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--text);">Pagamento Indisponível</h4>
+        <p style="font-size: 1rem; color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.6;">
+          No momento, não há método de pagamento automatizado disponível para esta operação.
+        </p>
+        <p style="color: var(--text); font-weight: 500; margin-bottom: 1rem;">
+          Para prosseguir, entre em contato conosco:
+        </p>
+        <a href="https://wa.me/5582996703421" target="_blank" class="btn btn-success" style="width: 100%; justify-content: center; margin-bottom: 1rem; font-size: 1.1rem; padding: 1rem;">
+          <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> Falar no WhatsApp
+        </a>
+        <p style="font-size: 0.9rem; color: var(--text-dim);">
+          (82) 99670-3421
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="okBlockModal" style="width: 100%;">Entendi</button>
       </div>
     </div>
   </div>

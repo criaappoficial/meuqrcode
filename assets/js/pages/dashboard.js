@@ -51,8 +51,22 @@ const els = {
   amount: document.getElementById('amount'),
   txid: document.getElementById('txid'),
   description: document.getElementById('description'),
-  downloadBtn: document.getElementById('downloadBtn')
+  downloadBtn: document.getElementById('downloadBtn'),
+  // Block Modal Elements
+  blockModal: document.getElementById('blockModal'),
+  closeBlockModal: document.getElementById('closeBlockModal'),
+  okBlockModal: document.getElementById('okBlockModal')
 };
+
+// Block Modal Logic
+const closeBlockModal = () => {
+  els.blockModal.classList.add('hidden');
+};
+els.closeBlockModal?.addEventListener('click', closeBlockModal);
+els.okBlockModal?.addEventListener('click', closeBlockModal);
+els.blockModal?.addEventListener('click', (e) => {
+  if (e.target === els.blockModal) closeBlockModal();
+});
 
 // Toggle Views
 const showDashboard = () => {
@@ -84,7 +98,16 @@ const showNewQr = () => {
   updateProjectedCost();
 };
 
-els.btnNewQr?.addEventListener('click', showNewQr);
+els.btnNewQr?.addEventListener('click', () => {
+  // Block creation - Show Modal
+  if (els.blockModal) {
+    els.blockModal.classList.remove('hidden');
+  } else {
+    // Fallback if modal missing for some reason
+    showNewQr();
+  }
+});
+// els.btnNewQr?.addEventListener('click', showNewQr);
 els.btnBackDashboard?.addEventListener('click', showDashboard);
 els.btnBackDashboard2?.addEventListener('click', showDashboard);
 
@@ -431,6 +454,12 @@ els.tableBody?.addEventListener('click', async (event) => {
   const publicId = target.dataset.publicId;
 
   if (target.dataset.action === 'edit') {
+    // Block Edit - Show Modal
+    if (els.blockModal) {
+      els.blockModal.classList.remove('hidden');
+      return;
+    }
+    // Fallback logic if modal missing
     const item = await QRController.find(docId);
     if (!item) {
         showAlert(els.alert, 'Item não encontrado para edição.', 'error');
