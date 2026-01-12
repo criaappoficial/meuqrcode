@@ -99,20 +99,7 @@ const showNewQr = () => {
 };
 
 els.btnNewQr?.addEventListener('click', () => {
-  // Check if user is VIP
-  const isVip = VIP_EMAILS.includes(currentUserEmail);
-  if (isVip) {
-      showNewQr();
-      return;
-  }
-
-  // Block creation - Show Modal
-  if (els.blockModal) {
-    els.blockModal.classList.remove('hidden');
-  } else {
-    // Fallback if modal missing for some reason
-    showNewQr();
-  }
+  showNewQr();
 });
 // els.btnNewQr?.addEventListener('click', showNewQr);
 els.btnBackDashboard?.addEventListener('click', showDashboard);
@@ -237,6 +224,37 @@ function drawStyledQR(value, style = 'default', format = 'png', size = 320) {
 // =========================================================
 els.form?.addEventListener('submit', async (event) => {
   event.preventDefault();
+
+  // Check cost and block if > 0 and not VIP (on Submit)
+  const isCustomForBlock = els.qrStyle.value === 'custom';
+  const styleValForBlock = isCustomForBlock ? (els.qrColor?.value || '#000000') : (els.qrStyle?.value || 'default');
+  const sizeValForBlock = els.qrSize?.value || 200;
+  
+  const formQRForBlock = {
+      docId: selectedDocId || 'temp-new',
+      active: els.form.active.checked,
+      style: styleValForBlock,
+      size: sizeValForBlock
+  };
+
+  let projectedListForBlock;
+  if (selectedDocId) {
+      projectedListForBlock = currentQRCodes.map(qr => qr.docId === selectedDocId ? { ...qr, ...formQRForBlock } : qr);
+  } else {
+      projectedListForBlock = [...currentQRCodes, formQRForBlock];
+  }
+
+  const pricingForBlock = PricingModel.calculateMonthlyCost(projectedListForBlock);
+  if (pricingForBlock.total > 0) {
+      const isVip = VIP_EMAILS.includes(currentUserEmail);
+      if (!isVip) {
+          if (els.blockModal) {
+            els.blockModal.classList.remove('hidden');
+          }
+          return; // Stop submission
+      }
+  }
+
   const title = els.form.title.value;
   const isPix = els.contentType?.value === 'pix';
   const destination = isPix ? '' : getContent(els.form.destination.value);
@@ -469,16 +487,6 @@ els.tableBody?.addEventListener('click', async (event) => {
   const publicId = target.dataset.publicId;
 
   if (target.dataset.action === 'edit') {
-    // Check if user is VIP
-    const isVip = VIP_EMAILS.includes(currentUserEmail);
-    if (!isVip) {
-      // Block Edit - Show Modal
-      if (els.blockModal) {
-        els.blockModal.classList.remove('hidden');
-        return;
-      }
-    }
-    // Fallback logic if modal missing or is VIP
     const item = await QRController.find(docId);
     if (!item) {
         showAlert(els.alert, 'Item não encontrado para edição.', 'error');
