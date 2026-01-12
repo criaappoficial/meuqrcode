@@ -23,7 +23,7 @@ const slugify = (value) =>
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9\-]/g, '');
 
-export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl, ownerId }) {
+export async function createQRCodeRecord({ title, destination, active = true, id: fixedId, fixedUrl, ownerId, style, pixData }) {
   const id = slugify(fixedId) || slugify(title) || `link-${Date.now()}`;
   const docId = id.replace(/\//g, '__');
   const payload = {
@@ -33,6 +33,8 @@ export async function createQRCodeRecord({ title, destination, active = true, id
     destination,
     active,
     ownerId: ownerId || null,
+    style: style || 'default',
+    pixData: pixData || null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
@@ -41,13 +43,15 @@ export async function createQRCodeRecord({ title, destination, active = true, id
   return payload;
 }
 
-export async function updateQRCodeRecord(docId, { title, destination, active, ownerId }) {
+export async function updateQRCodeRecord(docId, { title, destination, active, ownerId, style, pixData }) {
   const ref = doc(db, 'qrcodes', docId);
   const payload = { updatedAt: serverTimestamp() };
   if (typeof title !== 'undefined') payload.title = title;
   if (typeof destination !== 'undefined') payload.destination = destination;
   if (typeof active !== 'undefined') payload.active = active;
   if (typeof ownerId !== 'undefined') payload.ownerId = ownerId;
+  if (typeof style !== 'undefined') payload.style = style;
+  if (typeof pixData !== 'undefined') payload.pixData = pixData;
   await updateDoc(ref, payload);
   return true;
 }

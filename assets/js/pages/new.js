@@ -1,4 +1,4 @@
-import { observeAuth } from '../controllers/authController.js';
+import { observeAuth, logoutUser } from '../controllers/authController.js';
 import { QRController, drawQRCode, downloadQRCode, drawQRCodeSvg, downloadQRCodeSvg } from '../controllers/qrController.js';
 import { showAlert } from '../views/ui.js';
 
@@ -93,7 +93,6 @@ form?.addEventListener('submit', async (event) => {
   submitBtn.innerHTML = '<span class="loading"></span> Gerando...';
 
   try {
-    const isPix = contentTypeSelect?.value === 'pix';
     const destinationToSave = isPix ? buildPixPayload({
       pixKey: pixKeyInput.value,
       merchantName: merchantNameInput.value,
@@ -102,11 +101,19 @@ form?.addEventListener('submit', async (event) => {
       txid: txidInput.value,
       description: descriptionInput.value
     }) : destination;
-    const created = await QRController.create({ title, destination: destinationToSave, active, id: fixedId, fixedUrl: fixedUrlForSave, ownerId: currentUserId });
+    const style = (styleSelect?.value || 'default');
+    const created = await QRController.create({ 
+      title, 
+      destination: destinationToSave, 
+      active, 
+      id: fixedId, 
+      fixedUrl: fixedUrlForSave, 
+      ownerId: currentUserId,
+      style 
+    });
     const displayUrl = (BASE_URL === window.location.origin)
       ? composeQrUrl(created.id)
       : (created.fixedUrl || composeQrUrl(created.id));
-    const style = (styleSelect?.value || 'default');
     const format = (formatSelect?.value || 'png');
     const pixPayload = isPix ? buildPixPayload({
       pixKey: pixKeyInput.value,
@@ -205,3 +212,31 @@ function buildPixPayload({ pixKey, merchantName, merchantCity, amount, txid, des
   const crc = crc16(base);
   return base + crc;
 }
+
+// Sidebar toggle logic
+const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+const sidebar = document.querySelector('.sidebar');
+const mainContent = document.querySelector('.main-content');
+if (toggleSidebarBtn && sidebar && mainContent) {
+    toggleSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        // Save state
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
+    });
+}
+
+// Logout logic
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await logoutUser();
+            window.location.replace('../login.html');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    });
+}
+
