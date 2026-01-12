@@ -843,5 +843,5 @@ function updatePricingUI(qrCodes) {
           htmlSummary += `</ul>`;
           summaryContainer.innerHTML = htmlSummary;
       }
-  }
+    }
 }
