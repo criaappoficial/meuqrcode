@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <title>Planos - QR Code Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=8" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fas fa-qrcode"></i>
+        <span>MeuQRCode</span>
+      </div>
+      <button id="toggleSidebarBtn" class="toggle-btn" title="Minimizar Menu">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="dashboard.html">
+              <i class="fas fa-home"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="plans.html" class="active">
+              <i class="fas fa-tags"></i>
+              <span>Planos</span>
+            </a>
+          </li>
+          <li>
+            <a href="coming-soon.html">
+              <i class="fas fa-id-card"></i>
+              <span>Criar Cartão</span>
+            </a>
+          </li>
+          <div class="divider"></div>
+          <li>
+            <a href="#contato">
+              <i class="fas fa-envelope"></i>
+              <span>Contato</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="top-navbar">
+        <button id="mobileMenuBtn" class="mobile-menu-btn">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-left">
+          <h1 id="appTitle">Nossos Planos</h1>
+          <p style="color:var(--text-dim); font-size:0.9rem; margin-top: 4px;">Escolha o melhor plano para o seu negócio</p>
+        </div>
+        
+        <div class="navbar-right">
+          <div class="user-info">
+            <div class="brand-badge" style="width:40px; height:40px; font-size:1rem;">
+              <i class="fas fa-user"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="plans-container" style="padding: 2rem 0;">
+         <div class="pricing-grid">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3>Gratuito</h3>
+                    <div class="price">R$ 0<span>/mês</span></div>
+                    <p>Ideal para começar</p>
+                </div>
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> 1 QR Code</li>
+                    <li><i class="fas fa-check"></i> Redirecionamento Básico</li>
+                    <li><i class="fas fa-check"></i> Analytics Básico</li>
+                    <li class="disabled"><i class="fas fa-times"></i> QR Code Dinâmico</li>
+                    <li class="disabled"><i class="fas fa-times"></i> Cores Personalizadas</li>
+                </ul>
+                <button class="btn btn-outline" style="width:100%; justify-content: center;">Plano Atual</button>
+            </div>
+
+            <!-- Basic Plan -->
+            <div class="pricing-card featured">
+                <div class="popular-badge">Mais Popular</div>
+                <div class="pricing-header">
+                    <h3>Básico</h3>
+                    <div class="price">R$ 29<span>/mês</span></div>
+                    <p>Para pequenos negócios</p>
+                </div>
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> 10 QR Codes</li>
+                    <li><i class="fas fa-check"></i> QR Code Dinâmico</li>
+                    <li><i class="fas fa-check"></i> Cores Personalizadas</li>
+                    <li><i class="fas fa-check"></i> Analytics Avançado</li>
+                    <li class="disabled"><i class="fas fa-times"></i> Domínio Próprio</li>
+                </ul>
+                <button class="btn btn-primary" style="width:100%; justify-content: center;">Assinar Agora</button>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3>Profissional</h3>
+                    <div class="price">R$ 59<span>/mês</span></div>
+                    <p>Para empresas em crescimento</p>
+                </div>
+                <ul class="pricing-features">
+                    <li><i class="fas fa-check"></i> QR Codes Ilimitados</li>
+                    <li><i class="fas fa-check"></i> Domínio Personalizado</li>
+                    <li><i class="fas fa-check"></i> Remoção de Ads</li>
+                    <li><i class="fas fa-check"></i> Suporte Prioritário</li>
+                    <li><i class="fas fa-check"></i> API de Acesso</li>
+                </ul>
+                <button class="btn btn-outline" style="width:100%; justify-content: center;">Assinar Agora</button>
+            </div>
+         </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    /* Restore sidebar state immediately */
+    (function() {
+      try {
+        var state = localStorage.getItem('sidebarState');
+        var sb = document.querySelector('.sidebar');
+        var mc = document.querySelector('.main-content');
+        if (state === 'collapsed' && sb && mc) {
+          sb.classList.add('collapsed');
+          mc.classList.add('expanded');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  
+  <script type="module">
+    import { observeAuth, logoutUser } from '../assets/js/controllers/authController.js';
+    
+    // Auth Check
+    observeAuth((user) => {
+        // User is logged in
+    }, () => window.location.replace('../login.html'));
+
+    // Logout
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn?.addEventListener('click', async () => {
+        await logoutUser();
+        window.location.replace('../login.html');
+    });
+
+    // Mobile Menu & Sidebar Logic
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (mobileMenuBtn && sidebar) {
+        const toggleMenu = () => {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
+        };
+        const closeMenu = () => {
+            sidebar.classList.remove('active');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+        };
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMenu();
+        });
+        if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMenu);
+        
+        // Close when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 900 && 
+                sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !mobileMenuBtn.contains(e.target)) {
+                closeMenu();
+            }
+        });
+
+        // Close menu when clicking a link in sidebar
+        const sidebarLinks = sidebar.querySelectorAll('a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 900) {
+                    closeMenu();
+                }
+            });
+        });
+    }
+
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const mainContent = document.querySelector('.main-content');
+    if (toggleSidebarBtn && sidebar && mainContent) {
+        toggleSidebarBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
+        });
+    }
+  </script>
+</body>
+</html>
