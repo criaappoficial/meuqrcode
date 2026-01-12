@@ -76,7 +76,7 @@ const showDashboard = () => {
 };
 
 const showNewQr = () => {
-  selectedDocId = null; // Clear edit mode
+  // selectedDocId = null; // Removed: selectedDocId should be managed by caller (btnNewQr or edit action)
   els.dashboardView.classList.add('hidden');
   els.newQrView.classList.remove('hidden');
   // Reset form
@@ -99,6 +99,7 @@ const showNewQr = () => {
 };
 
 els.btnNewQr?.addEventListener('click', () => {
+  selectedDocId = null; // Explicitly clear for new
   showNewQr();
 });
 // els.btnNewQr?.addEventListener('click', showNewQr);
@@ -403,19 +404,51 @@ logoutBtn?.addEventListener('click', async () => {
 
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const sidebar = document.querySelector('.sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
 if (mobileMenuBtn && sidebar) {
-    mobileMenuBtn.addEventListener('click', () => {
+    const toggleMenu = () => {
         sidebar.classList.toggle('active');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.toggle('active');
+        }
+    };
+
+    const closeMenu = () => {
+        sidebar.classList.remove('active');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('active');
+        }
+    };
+
+    mobileMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMenu();
     });
     
-    // Close sidebar when clicking outside on mobile
+    // Close when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeMenu);
+    }
+
+    // Close sidebar when clicking outside on mobile (fallback if no overlay)
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 900 && 
             sidebar.classList.contains('active') && 
             !sidebar.contains(e.target) && 
             !mobileMenuBtn.contains(e.target)) {
-            sidebar.classList.remove('active');
+            closeMenu();
         }
+    });
+
+    // Close menu when clicking a link in sidebar
+    const sidebarLinks = sidebar.querySelectorAll('a');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 900) {
+                closeMenu();
+            }
+        });
     });
 }
 
@@ -573,10 +606,12 @@ els.tableBody?.addEventListener('click', async (event) => {
   await drawStyledQR(valueForQr, styleVal, format, sizeVal);
   els.preview.classList.remove('hidden');
 
-  // Trigger real-time update (re-implemented as requested for immediate feedback)
+  // Trigger real-time update
   // updateProjectedCost(); // Removed as per user request to NOT update on edit start
 
   isEditingPopulation = false;
+  // Trigger cost update to reflect current edit state in pricing UI
+  updateProjectedCost();
   return;
 }
 
@@ -775,5 +810,38 @@ function updatePricingUI(qrCodes) {
           <span>${pricing.formattedTotal} / mês</span>
       `;
       planCostEl.title = `Plano: ${pricing.breakdown.activeQRs} ativos (${pricing.breakdown.extraQRs} extras), ${pricing.breakdown.paidColors} cores pagas.`;
+  }
+
+  // Update WhatsApp Link in Modal AND Summary Container
+  const btnWhatsapp = document.getElementById('btnWhatsappAccess');
+  const summaryContainer = document.getElementById('planSummaryContainer');
+  
+  if (btnWhatsapp || summaryContainer) {
+      const breakdown = pricing.breakdown;
+      let featuresText = `*Resumo do Plano:*%0A`;
+      featuresText += `- Total QR Codes Ativos: ${breakdown.activeQRs}%0A`;
+      if (breakdown.extraQRs > 0) featuresText += `- QR Codes Extras (Pagos): ${breakdown.extraQRs}%0A`;
+      if (breakdown.paidColors > 0) featuresText += `- Personalizações de Cor: ${breakdown.paidColors}%0A`;
+      if (breakdown.sizeCost > 0) featuresText += `- Adicional de Tamanho: ${breakdown.sizeCost.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}%0A`;
+      
+      const message = `Olá! Gostaria de liberar meu acesso ao MeuQRCode.%0A%0A` +
+                      `*Valor Mensal:* ${pricing.formattedTotal}%0A` +
+                      `${featuresText}%0A` +
+                      `Aguardo instruções para pagamento e liberação.`;
+      
+      if (btnWhatsapp) {
+          btnWhatsapp.href = `https://wa.me/5582996703421?text=${message}`;
+      }
+
+      if (summaryContainer) {
+          let htmlSummary = `<strong>Valor Mensal: <span style="color:var(--primary); font-size:1.1rem;">${pricing.formattedTotal}</span></strong><br><br>`;
+          htmlSummary += `<ul style="list-style:none; padding:0; margin:0;">`;
+          htmlSummary += `<li><i class="fas fa-check-circle" style="color:var(--success); margin-right:6px;"></i> Total QR Codes Ativos: <strong>${breakdown.activeQRs}</strong></li>`;
+          if (breakdown.extraQRs > 0) htmlSummary += `<li><i class="fas fa-plus-circle" style="color:var(--primary); margin-right:6px;"></i> Extras (Pagos): <strong>${breakdown.extraQRs}</strong></li>`;
+          if (breakdown.paidColors > 0) htmlSummary += `<li><i class="fas fa-palette" style="color:var(--primary); margin-right:6px;"></i> Cores Pagas: <strong>${breakdown.paidColors}</strong></li>`;
+          if (breakdown.sizeCost > 0) htmlSummary += `<li><i class="fas fa-expand" style="color:var(--primary); margin-right:6px;"></i> Adicional Tamanho: <strong>${breakdown.sizeCost.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</strong></li>`;
+          htmlSummary += `</ul>`;
+          summaryContainer.innerHTML = htmlSummary;
+      }
   }
 }
