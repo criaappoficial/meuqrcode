@@ -1,6 +1,7 @@
 import { observeAuth, logoutUser } from '../controllers/authController.js';
 import { QRController, drawQRCode, downloadQRCode, drawQRCodeSvg, downloadQRCodeSvg } from '../controllers/qrController.js';
 import { PricingModel } from '../models/pricingModel.js';
+import { StatsController } from '../controllers/statsController.js';
 import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
 
 console.log('Dashboard JS v2 loaded');
@@ -320,6 +321,10 @@ els.form?.addEventListener('submit', async (event) => {
             size: sizeVal,
             pixData: pixDataObj
         });
+        
+        // Log Edit Action
+        await StatsController.logAction(currentUserId, currentUserEmail, 'edited');
+        
         // Retrieve updated item to show preview correctly
         resultItem = await QRController.find(selectedDocId);
         showAlert(els.alert, 'QR Code atualizado com sucesso!', 'success');
@@ -336,6 +341,10 @@ els.form?.addEventListener('submit', async (event) => {
             size: sizeVal,
             pixData: pixDataObj
         });
+
+        // Log Create Action
+        await StatsController.logAction(currentUserId, currentUserEmail, 'created');
+
         showAlert(els.alert, 'QR Code criado com sucesso!', 'success');
     }
     
@@ -623,6 +632,10 @@ els.tableBody?.addEventListener('click', async (event) => {
 
   if (target.dataset.action === 'preview') {
     if (!publicId) return;
+
+    // Log View Action
+    StatsController.logAction(currentUserId, currentUserEmail, 'viewed').catch(console.error);
+
     const fixedUrl = target.dataset.fixedUrl;
     const dest = target.dataset.destination || '';
     const style = target.dataset.style || 'default';
