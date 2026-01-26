@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="../assets/favicon.png">
+  <title>Admin - Estatísticas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=8" />
+  <style>
+    .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    .stats-table th, .stats-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+    .stats-table th {
+        background: var(--bg-card);
+        font-weight: 600;
+        color: var(--text-dim);
+    }
+    .stats-table tr:hover {
+        background: var(--bg-hover);
+    }
+    .badge-stat {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .badge-created { background: rgba(31, 78, 216, 0.1); color: var(--primary); }
+    .badge-viewed { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+    .badge-edited { background: rgba(234, 179, 8, 0.1); color: #ca8a04; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fas fa-qrcode"></i>
+        <span>MeuQRCode</span>
+      </div>
+      <button id="toggleSidebarBtn" class="toggle-btn" title="Minimizar Menu">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="#" class="active">
+              <i class="fas fa-chart-line"></i>
+              <span>Estatísticas</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="top-navbar">
+        <button id="mobileMenuBtn" class="mobile-menu-btn">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-left">
+          <h1>Estatísticas de Usuários</h1>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Atividade dos Usuários</h2>
+            <button id="refreshBtn" class="btn btn-secondary">
+                <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Usuário (Email)</th>
+                        <th>Criados</th>
+                        <th>Visualizações</th>
+                        <th>Edições</th>
+                        <th>Última Atividade</th>
+                    </tr>
+                </thead>
+                <tbody id="statsTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding: 2rem;">Carregando dados...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { observeAuth, logoutUser } from '../assets/js/controllers/authController.js';
+    import { StatsController } from '../assets/js/controllers/statsController.js';
+    import { formatDate } from '../assets/js/views/ui.js';
+
+    // Auth Check
+    observeAuth((user) => {
+        if (!user) {
+            window.location.href = '../page/index.html';
+        } else {
+            loadStats();
+        }
+    });
+
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+        await logoutUser();
+        window.location.href = '../page/index.html';
+    });
+
+    document.getElementById('refreshBtn')?.addEventListener('click', loadStats);
+
+    // Sidebar Logic
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+
+    // Desktop Collapse
+    if (toggleSidebarBtn && sidebar && mainContent) {
+        // Load saved state
+        const savedState = localStorage.getItem('sidebarState');
+        if (savedState === 'collapsed') {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+        }
+
+        toggleSidebarBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+        });
+    }
+
+    // Mobile Menu
+    if (mobileMenuBtn && sidebar && sidebarOverlay) {
+        const toggleMenu = () => {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        };
+
+        const closeMenu = () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        };
+
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMenu();
+        });
+
+        sidebarOverlay.addEventListener('click', closeMenu);
+
+        // Close on link click (mobile)
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 900) closeMenu();
+            });
+        });
+    }
+
+    async function loadStats() {
+        const tbody = document.getElementById('statsTableBody');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">Carregando...</td></tr>';
+
+        const stats = await StatsController.getAllStats();
+        
+        if (stats.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">Nenhum dado encontrado.</td></tr>';
+            return;
+        }
+
+        // Sort by last active descending
+        stats.sort((a, b) => {
+            const dateA = a.lastActive?.toDate ? a.lastActive.toDate() : new Date(0);
+            const dateB = b.lastActive?.toDate ? b.lastActive.toDate() : new Date(0);
+            return dateB - dateA;
+        });
+
+        tbody.innerHTML = stats.map(stat => {
+            const lastActive = stat.lastActive?.toDate ? stat.lastActive.toDate() : null;
+            const dateStr = lastActive ? lastActive.toLocaleDateString('pt-BR') + ' ' + lastActive.toLocaleTimeString('pt-BR') : '-';
+
+            return `
+                <tr>
+                    <td>
+                        <div style="font-weight:500;">${stat.email || 'Email não registrado'}</div>
+                        <div style="font-size:0.8rem; color:var(--text-dim);">${stat.id}</div>
+                    </td>
+                    <td><span class="badge-stat badge-created">${stat.created || 0}</span></td>
+                    <td><span class="badge-stat badge-viewed">${stat.viewed || 0}</span></td>
+                    <td><span class="badge-stat badge-edited">${stat.edited || 0}</span></td>
+                    <td style="font-size:0.9rem;">${dateStr}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+  </script>
+</body>
+</html>
