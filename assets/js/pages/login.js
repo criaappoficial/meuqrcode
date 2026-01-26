@@ -48,6 +48,7 @@ loginForm?.addEventListener('submit', async (event) => {
   }
 });
 
+// Registrar novo usuário
 registerForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
   const email = registerForm.regEmail.value;
