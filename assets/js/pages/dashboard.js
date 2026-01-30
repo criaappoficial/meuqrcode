@@ -843,7 +843,7 @@ function updatePricingUI(qrCodes) {
                       `Aguardo instruções para pagamento e liberação.`;
       
       if (btnWhatsapp) {
-          btnWhatsapp.href = `https://wa.me/5582996703421?text=${message}`;
+          btnWhatsapp.href = `https://wa.me/5588933005519?text=${message}`;
       }
 
       if (summaryContainer) {
