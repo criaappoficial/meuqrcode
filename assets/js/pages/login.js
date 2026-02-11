@@ -40,6 +40,7 @@ loginForm?.addEventListener('submit', async (event) => {
   try {
     await loginWithEmail(email, password);
   } catch (error) {
+    console.error('Login Error:', error);
     const message = mapError(error?.code);
     showAlert(alertContainer, message, 'error');
     btnText.textContent = 'Entrar';
@@ -112,6 +113,10 @@ function mapError(code) {
     case 'auth/wrong-password': return 'Senha incorreta.';
     case 'auth/invalid-email': return 'Email inválido.';
     case 'auth/email-already-in-use': return 'Este email já está em uso.';
-    default: return 'Não foi possível processar a requisição. Tente novamente.';
+    case 'auth/invalid-credential': return 'Email ou senha incorretos.';
+    case 'auth/invalid-login-credentials': return 'Email ou senha incorretos.';
+    case 'auth/too-many-requests': return 'Muitas tentativas falhas. Tente novamente mais tarde.';
+    case 'auth/network-request-failed': return 'Erro de conexão. Verifique sua internet.';
+    default: return `Erro: ${code || 'Desconhecido'}. Tente novamente.`;
   }
 }
