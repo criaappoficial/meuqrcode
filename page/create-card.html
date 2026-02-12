@@ -136,7 +136,75 @@
         .qr-vibrant canvas {
             border-radius: 50%;
         }
+
+        /* Responsive Tweaks */
+        @media (max-width: 768px) {
+            .models-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .navbar-left h1 {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-navbar {
+                gap: 0.5rem;
+                padding: 1rem 0.75rem;
+                margin-left: -1rem;
+                margin-right: -1rem;
+                width: calc(100% + 2rem);
+            }
+
+            .navbar-left {
+                flex: 1;
+                min-width: 0;
+                /* Allow shrinking */
+            }
+
+            .navbar-left h1 {
+                font-size: 1.1rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .navbar-left p {
+                font-size: 0.7rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .models-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .model-preview {
+                padding: 1.5rem;
+            }
+
+            .navbar-left h1 {
+                font-size: 1.15rem;
+            }
+
+            .navbar-left p {
+                font-size: 0.75rem;
+            }
+
+            .model-info {
+                padding: 1rem;
+            }
+
+            .form-header h2 {
+                font-size: 1.2rem;
+            }
+        }
     </style>
+
 </head>
 
 <body>
