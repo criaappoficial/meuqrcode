@@ -1,10 +1,31 @@
-import { observeAuth, logoutUser } from '../controllers/authController.js';
+import { observeAuth, logoutUser, getUserProfile, deleteCurrentUser } from '../controllers/authController.js';
+import { createUserProfile } from '../models/userModel.js';
 import { QRController, drawQRCode, downloadQRCode, drawQRCodeSvg, downloadQRCodeSvg } from '../controllers/qrController.js';
 import { PricingModel } from '../models/pricingModel.js';
 import { StatsController } from '../controllers/statsController.js';
 import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
 
 console.log('Dashboard JS v2 loaded');
+
+// AUTO-FIX: Garante que o usuário tenha um perfil no Firestore
+async function ensureUserProfile(user) {
+    try {
+        const profile = await getUserProfile(user.uid);
+        if (!profile) {
+            console.log('Perfil não encontrado no Dashboard. Criando agora...');
+            await createUserProfile(user.uid, {
+                email: user.email,
+                autoCreatedInDashboard: true
+            });
+            console.log('Perfil criado automaticamente pelo Dashboard.');
+            showAlert(els.alert, 'Seu perfil foi configurado com sucesso!', 'success');
+        } else {
+             console.log('Perfil verificado: OK', profile);
+        }
+    } catch (error) {
+        console.error('Erro ao verificar/criar perfil no Dashboard:', error);
+    }
+}
 
 const PRIMARY_DOMAIN = 'https://qrcode-alugueja.netlify.app';
 // Always use production domain for QR content, even on localhost
@@ -28,9 +49,23 @@ const els = {
   // Views
   dashboardView: document.getElementById('dashboard-view'),
   newQrView: document.getElementById('new-qr-view'),
+  settingsView: document.getElementById('settings-view'), // Nova view de configurações
   btnNewQr: document.getElementById('btn-new-qr'),
   btnBackDashboard: document.getElementById('btn-back-dashboard'),
   btnBackDashboard2: document.getElementById('btn-back-dashboard-2'),
+  
+  // Menu Links
+  menuSettings: document.getElementById('menu-settings'),
+  menuDashboard: document.querySelector('a[href="dashboard.html"]'),
+
+  // Delete Account Modal
+  btnDeleteAccount: document.getElementById('btn-delete-account'),
+  deleteAccountModal: document.getElementById('deleteAccountModal'),
+  cancelDeleteAccount: document.getElementById('cancelDeleteAccount'),
+  cancelDeleteAccountBtn: document.getElementById('cancelDeleteAccountBtn'),
+  confirmDeleteAccountBtn: document.getElementById('confirmDeleteAccountBtn'),
+  deleteConfirmationInput: document.getElementById('deleteConfirmationInput'),
+  settingsEmailDisplay: document.getElementById('settingsEmailDisplay'),
   
   // Form
   form: document.getElementById('qrForm'),
@@ -72,14 +107,25 @@ els.blockModal?.addEventListener('click', (e) => {
 // Toggle Views
 const showDashboard = () => {
   els.newQrView.classList.add('hidden');
+  els.settingsView?.classList.add('hidden');
   els.dashboardView.classList.remove('hidden');
+  
+  // Update Active Menu
+  els.menuDashboard?.classList.add('active');
+  els.menuSettings?.classList.remove('active');
+  
   loadDashboard(); // Refresh data
 };
 
 const showNewQr = () => {
   // selectedDocId = null; // Removed: selectedDocId should be managed by caller (btnNewQr or edit action)
   els.dashboardView.classList.add('hidden');
+  els.settingsView?.classList.add('hidden');
   els.newQrView.classList.remove('hidden');
+  
+  els.menuDashboard?.classList.remove('active');
+  els.menuSettings?.classList.remove('active');
+
   // Reset form
   els.form.reset();
   els.preview.classList.add('hidden');
@@ -99,10 +145,70 @@ const showNewQr = () => {
   updateProjectedCost();
 };
 
+const showSettings = (e) => {
+    e?.preventDefault();
+    els.dashboardView.classList.add('hidden');
+    els.newQrView.classList.add('hidden');
+    els.settingsView?.classList.remove('hidden');
+    
+    // Update Active Menu
+    els.menuDashboard?.classList.remove('active');
+    els.menuSettings?.classList.add('active');
+};
+
 els.btnNewQr?.addEventListener('click', () => {
   selectedDocId = null; // Explicitly clear for new
   showNewQr();
 });
+
+// Menu Listeners
+els.menuSettings?.addEventListener('click', showSettings);
+
+// Delete Account Logic
+els.btnDeleteAccount?.addEventListener('click', () => {
+    els.deleteAccountModal?.classList.remove('hidden');
+    els.deleteConfirmationInput.value = '';
+    els.confirmDeleteAccountBtn.disabled = true;
+});
+
+const closeDeleteAccountModal = () => {
+    els.deleteAccountModal?.classList.add('hidden');
+};
+
+els.cancelDeleteAccount?.addEventListener('click', closeDeleteAccountModal);
+els.cancelDeleteAccountBtn?.addEventListener('click', closeDeleteAccountModal);
+
+els.deleteConfirmationInput?.addEventListener('input', (e) => {
+    if (e.target.value === 'DELETAR') {
+        els.confirmDeleteAccountBtn.disabled = false;
+    } else {
+        els.confirmDeleteAccountBtn.disabled = true;
+    }
+});
+
+els.confirmDeleteAccountBtn?.addEventListener('click', async () => {
+    try {
+        els.confirmDeleteAccountBtn.textContent = 'Excluindo...';
+        els.confirmDeleteAccountBtn.disabled = true;
+        
+        await deleteCurrentUser();
+        
+        alert('Sua conta foi excluída com sucesso.');
+        window.location.replace('../login.html');
+    } catch (error) {
+        console.error('Erro ao excluir conta:', error);
+        if (error.code === 'auth/requires-recent-login') {
+            alert('Por segurança, você precisa fazer login novamente antes de excluir sua conta. Redirecionando...');
+            await logoutUser();
+            window.location.replace('../login.html');
+        } else {
+            alert('Erro ao excluir conta: ' + error.message);
+            els.confirmDeleteAccountBtn.textContent = 'Excluir permanentemente';
+            els.confirmDeleteAccountBtn.disabled = false;
+        }
+    }
+});
+
 // els.btnNewQr?.addEventListener('click', showNewQr);
 els.btnBackDashboard?.addEventListener('click', showDashboard);
 els.btnBackDashboard2?.addEventListener('click', showDashboard);
@@ -120,7 +226,7 @@ const VIP_EMAILS = [
   'fernandoamerico2@gmail.com'
 ];
 
-observeAuth((user) => {
+observeAuth(async (user) => {
   currentUserId = user?.uid || null;
   currentUserEmail = user?.email || null;
   const hour = new Date().getHours();
@@ -137,6 +243,19 @@ observeAuth((user) => {
   if (greetingEl) greetingEl.textContent = greetingText;
   const taglineEl = document.getElementById('dashboardTagline');
   if (taglineEl) taglineEl.textContent = greetingText;
+  
+  // Update Settings Profile Info
+  if (els.settingsEmailDisplay) {
+      els.settingsEmailDisplay.textContent = user.email;
+  }
+
+  // Check pricing status
+  try {
+      await PricingModel.checkPricingStatus(user.uid);
+  } catch (e) { console.error(e); }
+  // Ensure profile exists (Auto-fix)
+  await ensureUserProfile(user);
+
   loadDashboard();
 }, () => window.location.replace('../login.html'));
 

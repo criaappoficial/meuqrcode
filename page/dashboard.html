@@ -46,6 +46,12 @@
               <span>Criar Cartão</span>
             </a>
           </li>
+          <li>
+            <a href="#" id="menu-settings">
+              <i class="fas fa-cog"></i>
+              <span>Configurações</span>
+            </a>
+          </li>
           <div class="divider"></div>
           <!-- li>
             <a href="#contato">
@@ -311,17 +317,99 @@
 
       <!-- Contact Footer Section (Hidden by default, shown when clicking Contato?) -->
       <!-- Actually user asked "Contado chamando o rodape". I will add a footer at bottom of main content -->
-      <footer id="contato" style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.9rem;">
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-          <div>
-            <strong>MeuQRCode</strong> &copy; 2025
+      <!-- Settings View -->
+      <section id="settings-view" class="card hidden">
+        <div class="card-header">
+          <div class="title-group">
+            <h2 class="card-title">Configurações</h2>
+            <p style="color:var(--text-dim); font-size:0.9rem; margin-top:0.25rem;">Gerencie suas preferências e dados da conta</p>
           </div>
-          <div>
-            <a href="#" style="color: inherit; text-decoration: none; margin-left: 1rem;">Suporte</a>
-            <a href="#" style="color: inherit; text-decoration: none; margin-left: 1rem;">Termos</a>
+        </div>
+        
+        <div class="settings-grid" style="display: grid; gap: 2rem;">
+            
+            <!-- Profile Section (Visual Only) -->
+            <div class="settings-section">
+                <h3 style="font-size: 1.1rem; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-user-circle" style="color: var(--primary);"></i> Perfil
+                </h3>
+                <div class="profile-card" style="background: var(--bg); padding: 1.5rem; border-radius: var(--radius); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <div class="avatar-placeholder" style="width: 60px; height: 60px; background: var(--bg-accent); border-radius: 50%; display: grid; place-items: center; color: var(--primary); font-size: 1.5rem; font-weight: bold;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-info" style="flex: 1;">
+                        <h4 style="margin-bottom: 0.25rem;">Sua Conta</h4>
+                        <p id="settingsEmailDisplay" style="color: var(--text-dim); font-size: 0.9rem;">carregando...</p>
+                    </div>
+                    <button class="btn btn-secondary" style="font-size: 0.85rem;" disabled title="Em breve">
+                        <i class="fas fa-pen"></i> Editar
+                    </button>
+                </div>
+            </div>
+
+            <div class="divider" style="height: 1px; background: var(--border);"></div>
+
+            <!-- Danger Zone -->
+            <div class="settings-section">
+                <h3 style="font-size: 1.1rem; color: var(--danger); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-shield-alt"></i> Zona de Perigo
+                </h3>
+                
+                <div class="danger-zone-card" style="border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.03); padding: 1.5rem; border-radius: var(--radius);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+                        <div style="max-width: 600px;">
+                            <h4 style="color: var(--danger); margin-bottom: 0.5rem; font-weight: 600;">Excluir Conta</h4>
+                            <p style="color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;">
+                                A exclusão da conta é uma ação definitiva e irreversível. 
+                                Todos os seus QR Codes deixarão de funcionar imediatamente e seus dados serão removidos dos nossos servidores.
+                            </p>
+                        </div>
+                        <button id="btn-delete-account" class="btn" style="background: white; color: var(--danger); border: 1px solid var(--danger); white-space: nowrap; margin-top: 0.5rem;">
+                            Excluir minha conta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <!-- Delete Account Confirmation Modal -->
+      <div id="deleteAccountModal" class="modal-overlay hidden">
+        <div class="modal">
+          <div class="modal-header">
+            <h3>Excluir Conta?</h3>
+            <button id="cancelDeleteAccount" class="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>Tem certeza absoluta que deseja excluir sua conta? Esta ação não pode ser desfeita.</p>
+            <p style="margin-top: 1rem; font-weight: bold; color: #dc2626;">Digite "DELETAR" abaixo para confirmar:</p>
+            <input type="text" id="deleteConfirmationInput" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; border: 1px solid #ccc; border-radius: 4px;" placeholder="DELETAR">
+          </div>
+          <div class="modal-footer">
+            <button id="cancelDeleteAccountBtn" class="btn btn-secondary">Cancelar</button>
+            <button id="confirmDeleteAccountBtn" class="btn btn-danger" style="background: #dc2626; color: white;" disabled>Excluir permanentemente</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Footer -->
+      <footer id="main-footer" class="app-footer">
+        <div class="app-footer-content">
+          <div class="app-footer-brand">
+            <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #5c6ac4, #a855f7); border-radius: 6px; display: grid; place-items: center; color: white; font-size: 0.7rem;">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <span><strong>MeuQRCode</strong> &copy; 2025</span>
+          </div>
+          
+          <div class="app-footer-links">
+            <a href="#">Suporte</a>
+            <a href="#">Termos de Uso</a>
+            <a href="#">Privacidade</a>
           </div>
         </div>
       </footer>
+
     </main>
   </div>
 
