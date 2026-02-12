@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,10 +8,13 @@
   <title>Dashboard - QR Code Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/css/styles.css?v=8" />
 </head>
+
 <body>
   <div class="app-layout">
     <!-- Mobile Sidebar Overlay -->
@@ -25,7 +29,7 @@
       <button id="toggleSidebarBtn" class="toggle-btn" title="Minimizar Menu">
         <i class="fas fa-chevron-left"></i>
       </button>
-      
+
       <nav class="sidebar-nav">
         <ul>
           <li>
@@ -41,11 +45,12 @@
             </a>
           </li -->
           <li>
-            <a href="coming-soon.html">
+            <a href="create-card.html">
               <i class="fas fa-id-card"></i>
               <span>Criar Cartão</span>
             </a>
           </li>
+
           <li>
             <a href="#" id="menu-settings">
               <i class="fas fa-cog"></i>
@@ -80,14 +85,15 @@
           <h1 id="appTitle">Dashboard</h1>
           <p id="greeting" style="color:var(--text-dim); font-size:0.9rem; margin-top: 4px;"></p>
         </div>
-        
+
         <div class="navbar-right">
           <div id="planCost" class="plan-badge">
             <i class="fas fa-calculator"></i>
             <span>Calculando...</span>
           </div>
           <div class="user-info">
-            <div id="userAvatar" class="brand-badge" style="width:40px; height:40px; font-size:1rem; overflow: hidden; background: var(--bg-accent);">
+            <div id="userAvatar" class="brand-badge"
+              style="width:40px; height:40px; font-size:1rem; overflow: hidden; background: var(--bg-accent);">
               <i class="fas fa-user"></i>
             </div>
           </div>
@@ -137,7 +143,7 @@
 
       <!-- New QR View (Hidden by default) -->
       <section id="new-qr-view" class="card hidden">
-        
+
         <form id="qrForm" novalidate>
           <div class="form-header">
             <button type="button" id="btn-back-dashboard" class="btn-back" title="Voltar">
@@ -241,38 +247,39 @@
           </div>
 
           <div class="grid-2">
-              <div class="form-group">
-                <label for="qrStyle">Estilo</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-palette"></i>
-                  <select id="qrStyle" name="qrStyle">
-                    <option value="default">Padrão (Preto/Branco)</option>
-                    <option value="dark">Escuro (Invertido)</option>
-                    <option value="light">Claro (Suave)</option>
-                    <option value="blue">Azul Corporativo</option>
-                    <option value="custom">Personalizado (Cor)</option>
-                  </select>
-                  <input type="color" id="qrColor" value="#000000" class="hidden" style="width: 45px; height: 38px; margin-left: 0.5rem; padding: 0 2px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="qrSize">Tamanho</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-expand"></i>
-                  <select id="qrSize" name="qrSize">
-                    <option value="200">Pequeno (200px)</option>
-                    <option value="500" selected>Padrão (500px)</option>
-                    <option value="1000">Grande (1000px)</option>
-                    <option value="2000">Extra (2000px)</option>
-                  </select>
-                </div>
+            <div class="form-group">
+              <label for="qrStyle">Estilo</label>
+              <div class="input-icon-wrapper">
+                <i class="fas fa-palette"></i>
+                <select id="qrStyle" name="qrStyle">
+                  <option value="default">Padrão (Preto/Branco)</option>
+                  <option value="dark">Escuro (Invertido)</option>
+                  <option value="light">Claro (Suave)</option>
+                  <option value="blue">Azul Corporativo</option>
+                  <option value="custom">Personalizado (Cor)</option>
+                </select>
+                <input type="color" id="qrColor" value="#000000" class="hidden"
+                  style="width: 45px; height: 38px; margin-left: 0.5rem; padding: 0 2px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
               </div>
             </div>
 
-            <div class="grid-2">
-              <div class="form-group">
-                <label for="qrFormat">Formato</label>
+            <div class="form-group">
+              <label for="qrSize">Tamanho</label>
+              <div class="input-icon-wrapper">
+                <i class="fas fa-expand"></i>
+                <select id="qrSize" name="qrSize">
+                  <option value="200">Pequeno (200px)</option>
+                  <option value="500" selected>Padrão (500px)</option>
+                  <option value="1000">Grande (1000px)</option>
+                  <option value="2000">Extra (2000px)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="qrFormat">Formato</label>
               <div class="input-icon-wrapper">
                 <i class="fas fa-file-image"></i>
                 <select id="qrFormat" name="qrFormat">
@@ -291,9 +298,10 @@
           </div>
 
           <div style="margin-top: 2rem; margin-bottom: 3rem; display: flex; justify-content: flex-end;">
-             <button type="submit" class="btn btn-primary" id="submitBtn" style="padding: 0.75rem 2.5rem; min-width: 220px;">
-               <i class="fas fa-magic"></i> Criar QR Code
-             </button>
+            <button type="submit" class="btn btn-primary" id="submitBtn"
+              style="padding: 0.75rem 2.5rem; min-width: 220px;">
+              <i class="fas fa-magic"></i> Criar QR Code
+            </button>
           </div>
         </form>
 
@@ -315,61 +323,70 @@
           </div>
         </div>
       </section>
-      
+
       <!-- Settings View -->
       <section id="settings-view" class="card hidden">
         <div class="card-header">
           <div class="title-group">
             <h2 class="card-title">Configurações</h2>
-            <p style="color:var(--text-dim); font-size:0.9rem; margin-top:0.25rem;">Gerencie suas preferências e dados da conta</p>
+            <p style="color:var(--text-dim); font-size:0.9rem; margin-top:0.25rem;">Gerencie suas preferências e dados
+              da conta</p>
           </div>
         </div>
-        
+
         <div class="settings-grid" style="display: grid; gap: 2rem;">
-            
-            <!-- Profile Section (Visual Only) -->
-            <div class="settings-section">
-                <h3 style="font-size: 1.1rem; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fas fa-user-circle" style="color: var(--primary);"></i> Perfil
-                </h3>
-                <div class="profile-card" style="background: var(--bg); padding: 1.5rem; border-radius: var(--radius); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                    <div id="settingsAvatar" class="avatar-placeholder" style="width: 60px; height: 60px; background: var(--bg-accent); border-radius: 50%; display: grid; place-items: center; color: var(--primary); font-size: 1.5rem; font-weight: bold; overflow: hidden;">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="profile-info" style="flex: 1;">
-                        <h4 id="settingsNameDisplay" style="margin-bottom: 0.25rem;">Sua Conta</h4>
-                        <p id="settingsEmailDisplay" style="color: var(--text-dim); font-size: 0.9rem;">carregando...</p>
-                    </div>
-                    <button id="btn-edit-profile" class="btn btn-secondary" style="font-size: 0.85rem;">
-                        <i class="fas fa-pen"></i> Editar
-                    </button>
 
-                </div>
+          <!-- Profile Section (Visual Only) -->
+          <div class="settings-section">
+            <h3
+              style="font-size: 1.1rem; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-user-circle" style="color: var(--primary);"></i> Perfil
+            </h3>
+            <div class="profile-card"
+              style="background: var(--bg); padding: 1.5rem; border-radius: var(--radius); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+              <div id="settingsAvatar" class="avatar-placeholder"
+                style="width: 60px; height: 60px; background: var(--bg-accent); border-radius: 50%; display: grid; place-items: center; color: var(--primary); font-size: 1.5rem; font-weight: bold; overflow: hidden;">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="profile-info" style="flex: 1;">
+                <h4 id="settingsNameDisplay" style="margin-bottom: 0.25rem;">Sua Conta</h4>
+                <p id="settingsEmailDisplay" style="color: var(--text-dim); font-size: 0.9rem;">carregando...</p>
+              </div>
+              <button id="btn-edit-profile" class="btn btn-secondary" style="font-size: 0.85rem;">
+                <i class="fas fa-pen"></i> Editar
+              </button>
+
             </div>
+          </div>
 
-            <div class="divider" style="height: 1px; background: var(--border);"></div>
+          <div class="divider" style="height: 1px; background: var(--border);"></div>
 
-            <!-- Danger Zone -->
-            <div class="settings-section">
-                <h3 style="font-size: 1.1rem; color: var(--danger); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fas fa-shield-alt"></i> Zona de Perigo
-                </h3>
-                
-                <div class="danger-zone-card" style="border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.03); padding: 1.5rem; border-radius: var(--radius);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
-                        <div style="max-width: 600px;">
-                            <h4 style="color: var(--danger); margin-bottom: 0.5rem; font-weight: 600;">Excluir Conta</h4>
-                            <p style="color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;">
-                                A exclusão da conta é uma ação definitiva e irreversível. 
-                                Todos os seus QR Codes deixarão de funcionar imediatamente e seus dados serão removidos dos nossos servidores.
-                            </p>
-                        </div>
-                        <button id="btn-delete-account" class="btn" style="background: white; color: var(--danger); border: 1px solid var(--danger); white-space: nowrap; margin-top: 0.5rem;">
-                            Excluir minha conta
-                        </button>
-                    </div>
+          <!-- Danger Zone -->
+          <div class="settings-section">
+            <h3
+              style="font-size: 1.1rem; color: var(--danger); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-shield-alt"></i> Zona de Perigo
+            </h3>
+
+            <div class="danger-zone-card"
+              style="border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.03); padding: 1.5rem; border-radius: var(--radius);">
+              <div
+                style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+                <div style="max-width: 600px;">
+                  <h4 style="color: var(--danger); margin-bottom: 0.5rem; font-weight: 600;">Excluir Conta</h4>
+                  <p style="color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;">
+                    A exclusão da conta é uma ação definitiva e irreversível.
+                    Todos os seus QR Codes deixarão de funcionar imediatamente e seus dados serão removidos dos nossos
+                    servidores.
+                  </p>
                 </div>
+                <button id="btn-delete-account" class="btn"
+                  style="background: white; color: var(--danger); border: 1px solid var(--danger); white-space: nowrap; margin-top: 0.5rem;">
+                  Excluir minha conta
+                </button>
+              </div>
             </div>
+          </div>
         </div>
       </section>
 
@@ -384,8 +401,9 @@
 
         <form id="profileForm" novalidate style="margin-top: 1.5rem;">
           <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem;">
-            <div id="avatarEditPreview" style="width: 120px; height: 120px; background: var(--bg-accent); border-radius: 50%; display: grid; place-items: center; color: var(--primary); font-size: 3rem; margin-bottom: 1rem; overflow: hidden; border: 4px solid var(--primary); position: relative;">
-               <i class="fas fa-user"></i>
+            <div id="avatarEditPreview"
+              style="width: 120px; height: 120px; background: var(--bg-accent); border-radius: 50%; display: grid; place-items: center; color: var(--primary); font-size: 3rem; margin-bottom: 1rem; overflow: hidden; border: 4px solid var(--primary); position: relative;">
+              <i class="fas fa-user"></i>
             </div>
             <label for="avatarInput" class="btn btn-secondary" style="cursor: pointer;">
               <i class="fas fa-camera"></i> Alterar Foto
@@ -411,10 +429,10 @@
           </div>
 
           <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-             <button type="button" id="btn-cancel-profile" class="btn btn-secondary">Cancelar</button>
-             <button type="submit" class="btn btn-primary" id="saveProfileBtn">
-               <i class="fas fa-save"></i> Salvar Perfil
-             </button>
+            <button type="button" id="btn-cancel-profile" class="btn btn-secondary">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+              <i class="fas fa-save"></i> Salvar Perfil
+            </button>
           </div>
         </form>
       </section>
@@ -430,11 +448,14 @@
           <div class="modal-body">
             <p>Tem certeza absoluta que deseja excluir sua conta? Esta ação não pode ser desfeita.</p>
             <p style="margin-top: 1rem; font-weight: bold; color: #dc2626;">Digite "DELETAR" abaixo para confirmar:</p>
-            <input type="text" id="deleteConfirmationInput" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; border: 1px solid #ccc; border-radius: 4px;" placeholder="DELETAR">
+            <input type="text" id="deleteConfirmationInput"
+              style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"
+              placeholder="DELETAR">
           </div>
           <div class="modal-footer">
             <button id="cancelDeleteAccountBtn" class="btn btn-secondary">Cancelar</button>
-            <button id="confirmDeleteAccountBtn" class="btn btn-danger" style="background: #dc2626; color: white;" disabled>Excluir permanentemente</button>
+            <button id="confirmDeleteAccountBtn" class="btn btn-danger" style="background: #dc2626; color: white;"
+              disabled>Excluir permanentemente</button>
           </div>
         </div>
       </div>
@@ -443,12 +464,13 @@
       <footer id="main-footer" class="app-footer">
         <div class="app-footer-content">
           <div class="app-footer-brand">
-            <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #5c6ac4, #a855f7); border-radius: 6px; display: grid; place-items: center; color: white; font-size: 0.7rem;">
-                <i class="fas fa-qrcode"></i>
+            <div
+              style="width: 24px; height: 24px; background: linear-gradient(135deg, #5c6ac4, #a855f7); border-radius: 6px; display: grid; place-items: center; color: white; font-size: 0.7rem;">
+              <i class="fas fa-qrcode"></i>
             </div>
             <span><strong>MeuQRCode</strong> &copy; 2025</span>
           </div>
-          
+
           <div class="app-footer-links">
             <a href="#">Suporte</a>
             <a href="#">Termos de Uso</a>
@@ -481,7 +503,8 @@
         <h3 class="modal-title">Pré-visualização do QR Code</h3>
         <button class="modal-close" id="closeQrPreview">×</button>
       </div>
-      <div class="modal-body" style="text-align:center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div class="modal-body"
+        style="text-align:center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <canvas id="qrPreviewCanvas"></canvas>
         <p style="margin-top:1rem; color:var(--text-dim); word-break:break-all;">
           <small id="qrPreviewUrl"></small>
@@ -501,9 +524,10 @@
           <i class="fas fa-crown" style="font-size: 4rem; color: var(--primary);"></i>
         </div>
         <h4 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--text);">Recurso Exclusivo</h4>
-        
+
         <!-- Plan Summary Container -->
-        <div id="planSummaryContainer" style="background: #f8f9fa; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.95rem; border: 1px solid var(--border);">
+        <div id="planSummaryContainer"
+          style="background: #f8f9fa; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.95rem; border: 1px solid var(--border);">
           <!-- Summary will be injected here -->
         </div>
 
@@ -513,7 +537,8 @@
         <p style="color: var(--text); font-weight: 500; margin-bottom: 1rem;">
           Fale conosco para liberar seu acesso imediatamente:
         </p>
-        <a id="btnWhatsappAccess" href="https://wa.me/5588933005519" target="_blank" class="btn btn-success" style="width: 100%; justify-content: center; margin-bottom: 1rem; font-size: 1.1rem; padding: 1rem;">
+        <a id="btnWhatsappAccess" href="https://wa.me/5588933005519" target="_blank" class="btn btn-success"
+          style="width: 100%; justify-content: center; margin-bottom: 1rem; font-size: 1.1rem; padding: 1rem;">
           <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> Liberar Acesso Agora
         </a>
         <p style="font-size: 0.9rem; color: var(--text-dim);">
@@ -529,7 +554,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     /* Restore sidebar state immediately to prevent FOUC */
-    (function() {
+    (function () {
       try {
         var state = localStorage.getItem('sidebarState');
         var sb = document.querySelector('.sidebar');
@@ -538,9 +563,10 @@
           sb.classList.add('collapsed');
           mc.classList.add('expanded');
         }
-      } catch(e) {}
+      } catch (e) { }
     })();
   </script>
   <script type="module" src="../assets/js/pages/dashboard.js?v=7"></script>
 </body>
+
 </html>

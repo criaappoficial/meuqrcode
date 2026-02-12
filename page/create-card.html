@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <title>Criar Cartão - QR Code Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css?v=8" />
+    <style>
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .model-card {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .model-preview {
+            aspect-ratio: 1;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .model-info {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .model-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .model-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .model-tag {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .tag-free {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .tag-premium {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        /* Custom Styles for QR Previews */
+        .qr-wrapper {
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-classic {
+            border: 4px solid #000;
+            padding: 8px;
+            background: #fff;
+        }
+
+        .qr-modern {
+            border-radius: 30px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .qr-modern canvas {
+            border-radius: 10px;
+        }
+
+        .qr-corporate {
+            border: 6px solid #1f4ed8;
+            padding: 10px;
+            background: #eff6ff;
+            border-radius: 12px;
+        }
+
+        .qr-minimalist {
+            padding: 20px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .qr-vibrant {
+            border: 4px solid #7c3aed;
+            padding: 12px;
+            background: #f5f3ff;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .qr-vibrant canvas {
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <!-- Sidebar (Same as dashboard) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-qrcode"></i>
+                <span>MeuQRCode</span>
+            </div>
+            <button id="toggleSidebarBtn" class="toggle-btn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+                    <li><a href="create-card.html" class="active"><i class="fas fa-id-card"></i><span>Criar
+                                Cartão</span></a></li>
+                    <li><a href="dashboard.html#settings"><i class="fas fa-cog"></i><span>Configurações</span></a></li>
+
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i><span>Sair</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-navbar">
+                <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+                <div class="navbar-left">
+                    <h1>Modelos de QR Code</h1>
+                    <p style="color:var(--text-dim); font-size:0.9rem;">Escolha o estilo perfeito para o seu cartão</p>
+                </div>
+
+                <div class="navbar-right">
+                    <div class="user-info">
+                        <div id="userAvatar" class="brand-badge"
+                            style="width:40px; height:40px; font-size:1rem; overflow: hidden; background: var(--bg-accent);">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <section id="models-view" class="container-fluid" style="padding-bottom: 5rem;">
+                <div class="models-grid" id="modelsGrid">
+                    <!-- Models will be injected here -->
+                </div>
+            </section>
+
+            <!-- Step 2: Card Creation (Hidden initially) -->
+            <section id="card-creation-view" class="card hidden">
+                <div class="form-header">
+                    <button type="button" id="btnBackToModels" class="btn-back"><i
+                            class="fas fa-arrow-left"></i></button>
+                    <h2 class="card-title">Criar Seu Cartão Digital</h2>
+                </div>
+                <div class="card-body">
+                    <div id="selectedModelPreview" style="text-align: center; margin-bottom: 2rem;"></div>
+
+                    <form id="cardForm">
+                        <div class="form-group">
+                            <label for="title">Título do Cartão/QR *</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-heading"></i>
+                                <input id="title" name="title" type="text" placeholder="Ex: Meu Cartão de Visitas"
+                                    required />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contentType">Tipo de conteúdo</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-layer-group"></i>
+                                <select id="contentType" name="contentType">
+                                    <option value="text">Link / Texto</option>
+                                    <option value="pix">PIX (Pagamento)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Link fixo do QR Code *</label>
+                            <div class="url-builder">
+                                <i class="fas fa-globe" style="color:var(--text-dim); margin-right:0.5rem;"></i>
+                                <span>qrcode-alugueja.netlify.app/</span>
+                                <input id="fixedUser" name="fixedUser" type="text" placeholder="user"
+                                    style="max-width:80px;" required />
+                                <span>/</span>
+                                <input id="fixedSlug" name="fixedSlug" type="text" placeholder="slug" required />
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="destinationGroup">
+                            <label for="destination">Link de Destino *</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-link"></i>
+                                <input id="destination" name="destination" type="text"
+                                    placeholder="https://exemplo.com" />
+                            </div>
+                        </div>
+
+                        <div id="pixFields" class="hidden">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="pixKey">Chave PIX *</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-key"></i>
+                                        <input id="pixKey" name="pixKey" type="text" placeholder="Chave PIX" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="amount">Valor (Opcional)</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-dollar-sign"></i>
+                                        <input id="amount" name="amount" type="number" step="0.01" placeholder="0.00" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="merchantName">Nome do Recebedor *</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-user-tag"></i>
+                                        <input id="merchantName" name="merchantName" type="text"
+                                            placeholder="Nome completo" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="merchantCity">Cidade *</label>
+                                    <div class="input-icon-wrapper">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <input id="merchantCity" name="merchantCity" type="text" placeholder="Cidade" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="qrSize">Tamanho de Impressão</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-expand"></i>
+                                    <select id="qrSize" name="qrSize">
+                                        <option value="200">Pequeno (200px)</option>
+                                        <option value="500" selected>Padrão (500px)</option>
+                                        <option value="1000">Grande (1000px)</option>
+                                        <option value="2000">Extra (2000px)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="qrFormat">Formato de Download</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-file-image"></i>
+                                    <select id="qrFormat" name="qrFormat">
+                                        <option value="png">Imagem (PNG)</option>
+                                        <option value="svg">Vetor (SVG)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="active" name="active" checked />
+                                <span>Ativar QR Code imediatamente</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" class="btn btn-secondary" id="btnCancelCardForm">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" id="btnSaveCard"><i class="fas fa-save"></i>
+                                Criar Cartão</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModelModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Confirmar Modelo</h3>
+                <button id="closeConfirmModal" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Você deseja utilizar o modelo <strong id="modalModelName"></strong> para o seu cartão?</p>
+                <div id="modalPreviewContainer" style="display: flex; justify-content: center; margin-top: 1.5rem;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnCancelSelection" class="btn btn-secondary">Cancelar</button>
+                <button id="btnConfirmSelection" class="btn btn-primary">Sim, Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Block Modal -->
+    <div id="blockModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Recurso Premium</h3>
+                <button class="modal-close" id="closeBlockModal">×</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2rem 1rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <i class="fas fa-crown" style="font-size: 4rem; color: var(--primary);"></i>
+                </div>
+                <h4 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--text);">Estilo Exclusivo</h4>
+
+                <div id="planSummaryContainer"
+                    style="background: #f8f9fa; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.95rem; border: 1px solid var(--border);">
+                    <!-- Summary will be injected here -->
+                </div>
+
+                <p style="font-size: 1rem; color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.6;">
+                    Este modelo faz parte do nosso conjunto de designs premium.
+                </p>
+                <p style="color: var(--text); font-weight: 500; margin-bottom: 1rem;">
+                    Fale conosco para liberar este e outros estilos agora:
+                </p>
+                <a id="btnWhatsappAccess" href="https://wa.me/5588933005519" target="_blank" class="btn btn-success"
+                    style="width: 100%; justify-content: center; margin-bottom: 1rem; font-size: 1.1rem; padding: 1.2rem;">
+                    <i class="fab fa-whatsapp" style="font-size: 1.4rem;"></i> Liberar Estilos Premium
+                </a>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="okBlockModal" style="width: 100%;">Voltar aos Modelos</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <script type="module" src="../assets/js/pages/create-card.js"></script>
+</body>
+
+</html>

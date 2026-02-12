@@ -422,7 +422,13 @@ observeAuth(async (user) => {
   });
 
   loadDashboard();
+
+  // Handle hash-based navigation (from other pages)
+  if (window.location.hash === '#settings') {
+    setTimeout(() => showSettings(), 100);
+  }
 }, () => window.location.replace('../login.html'));
+
 
 // =========================================================
 // Helpers from new.js (moved here for single-page experience)
