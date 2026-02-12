@@ -1,5 +1,9 @@
 import { observeAuth, loginWithEmail, registerWithEmail } from '../controllers/authController.js';
 import { showAlert } from '../views/ui.js';
+import { db } from '../core/firebase.js'; // Importação direta
+import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'; // Importação direta
+
+console.log('Login.js carregado v9 - Iniciando sistema...');
 
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
@@ -71,7 +75,24 @@ registerForm?.addEventListener('submit', async (event) => {
   registerLoader.classList.remove('hidden');
 
   try {
-    await registerWithEmail(email, password);
+    const userCred = await registerWithEmail(email, password);
+    const user = userCred.user;
+
+    // TENTATIVA DUPLA: Se o controller falhar, tenta aqui também
+    console.log('Tentativa de backup de criação de perfil no login.js...');
+    try {
+        await setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            isAdmin: false,
+            createdAt: new Date(),
+            backupCreated: true
+        }, { merge: true });
+        console.log('Perfil criado com sucesso pelo BACKUP do login.js');
+    } catch (innerError) {
+        console.error('FALHA TAMBÉM NO BACKUP:', innerError);
+        alert('ERRO CRÍTICO: Não foi possível salvar seus dados no banco de dados. Verifique o console.');
+    }
+
     // observer vai redirecionar após cadastro
   } catch (error) {
     const message = mapError(error?.code);

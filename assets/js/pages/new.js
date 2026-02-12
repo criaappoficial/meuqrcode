@@ -189,29 +189,76 @@ function crc16(str) {
   return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 function buildPixPayload({ pixKey, merchantName, merchantCity, amount, txid, description }) {
+  const formatPixKey = (key) => {
+    const k = (key || '').trim();
+    if (k.includes('@')) return k; // Email
+    if (/^[0-9a-fA-F-]{32,36}$/.test(k)) return k; // EVP
+    
+    const isPhoneFormat = /\([0-9]{2}\)/.test(k);
+    const hasCountryCode = k.startsWith('+');
+    const raw = k.replace(/[^0-9a-zA-Z]/g, '');
+    
+    if (hasCountryCode) return '+' + raw;
+    if (isPhoneFormat) return '+55' + raw;
+    
+    if (/^\d+$/.test(raw)) {
+       const isValidCPF = (cpf) => {
+         if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
+         let soma = 0, resto;
+         for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+         resto = (soma * 10) % 11;
+         if (resto === 10 || resto === 11) resto = 0;
+         if (resto !== parseInt(cpf.substring(9, 10))) return false;
+         soma = 0;
+         for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+         resto = (soma * 10) % 11;
+         if (resto === 10 || resto === 11) resto = 0;
+         if (resto !== parseInt(cpf.substring(10, 11))) return false;
+         return true;
+       };
+       if (raw.length === 11 && !isValidCPF(raw)) return '+55' + raw;
+       if (raw.length === 10) return '+55' + raw;
+    }
+
+    return raw; 
+  };
+  
   const sanitizeText = (s = '', max = 25) => {
     const t = (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .toUpperCase().replace(/[^A-Z0-9 \-\.]/g, ' ').trim();
+      .toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').trim();
     return t.slice(0, max);
   };
   const sanitizeTxid = (s = '') => (s || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 25);
+  
+  const pixKeySan = formatPixKey(pixKey);
   const nmSan = sanitizeText(merchantName, 25);
   const citySan = sanitizeText(merchantCity, 15);
   const descSan = (description || '').toString().slice(0, 40);
   const txidSan = sanitizeTxid(txid);
+  const amountSan = amount ? String(amount).replace(',', '.') : '';
 
-  const acc = tlv('26', tlv('00', 'br.gov.bcb.pix') + tlv('01', pixKey) + (descSan ? tlv('02', descSan) : ''));
+  const acc = tlv('26', tlv('00', 'br.gov.bcb.pix') + tlv('01', pixKeySan) + (descSan ? tlv('02', descSan) : ''));
   const mcc = tlv('52', '0000');
   const cur = tlv('53', '986');
-  const amt = amount ? tlv('54', String(parseFloat(amount).toFixed(2))) : '';
+  const amt = amountSan ? tlv('54', String(parseFloat(amountSan).toFixed(2))) : '';
   const cty = tlv('58', 'BR');
   const nm = tlv('59', nmSan);
   const city = tlv('60', citySan);
-  const add = txidSan ? tlv('62', tlv('05', txidSan)) : '';
-  const base = tlv('00', '01') + tlv('01', '11') + acc + mcc + cur + amt + cty + nm + city + add + '6304';
+  const add = tlv('62', tlv('05', txidSan || '***'));
+  const base = tlv('00', '01') + tlv('01', '12') + acc + mcc + cur + amt + cty + nm + city + add + '6304';
   const crc = crc16(base);
   return base + crc;
 }
+
+// Add responsive style for canvas
+const style = document.createElement('style');
+style.innerHTML = `
+  #qrCanvas {
+    max-width: 100%;
+    height: auto;
+  }
+`;
+document.head.appendChild(style);
 
 // Sidebar toggle logic
 const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');

@@ -114,20 +114,44 @@
             </table>
         </div>
       </div>
+      
+      <footer class="app-footer">
+        <div class="app-footer-content">
+          <div class="app-footer-brand">
+            <strong>MeuQRCode</strong> &copy; 2025
+          </div>
+          <div class="app-footer-links">
+            <a href="#">Suporte</a>
+            <a href="#">Termos</a>
+          </div>
+        </div>
+      </footer>
     </main>
   </div>
 
   <script type="module">
-    import { observeAuth, logoutUser } from '../assets/js/controllers/authController.js';
+    import { observeAuth, logoutUser, getUserProfile } from '../assets/js/controllers/authController.js';
     import { StatsController } from '../assets/js/controllers/statsController.js';
     import { formatDate } from '../assets/js/views/ui.js';
 
     // Auth Check
-    observeAuth((user) => {
+    observeAuth(async (user) => {
         if (!user) {
             window.location.href = '../page/index.html';
         } else {
-            loadStats();
+            // Verifica se é admin
+            try {
+                const profile = await getUserProfile(user.uid);
+                if (!profile || !profile.isAdmin) {
+                    alert('Acesso negado. Apenas administradores podem acessar esta página.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                loadStats();
+            } catch (error) {
+                console.error('Erro ao verificar permissões:', error);
+                window.location.href = 'dashboard.html';
+            }
         }
     });
 

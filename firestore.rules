@@ -3,12 +3,20 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /qrcodes/{id} {
       allow read: if true;
-      allow write: if request.auth != null;
+      // Permite escrita se autenticado OU se for apenas uma atualização do contador de views
+      allow create: if request.auth != null;
+      allow update: if request.auth != null || 
+                   (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'updatedAt']));
+      allow delete: if request.auth != null;
     }
 
     match /user_stats/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null;
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
