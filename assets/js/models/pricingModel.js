@@ -71,5 +71,11 @@ export const PricingModel = {
         sizeCost: totalSizeCost
       }
     };
+  },
+
+  async checkPricingStatus(userId) {
+    // Placeholder for checking pricing status remotely if needed
+    // Currently we just calculate locally in dashboard
+    return true;
   }
 };
