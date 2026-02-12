@@ -94,7 +94,14 @@ const toSlug = (value) =>
 
 const uniqueSuffix = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 4)).slice(-6);
 
+// Performance Helper
+const onIdle = (fn) => {
+    if (window.requestIdleCallback) return window.requestIdleCallback(fn);
+    return setTimeout(fn, 1);
+};
+
 function pad(n) { return n.toString().padStart(2, '0'); }
+
 function tlv(id, value) { const v = String(value || ''); return id + pad(v.length) + v; }
 function crc16(str) {
     let crc = 0xFFFF;
@@ -164,14 +171,16 @@ async function loadUserData(user) {
 async function renderModels() {
     console.log('Rendering models...');
     els.modelsGrid.innerHTML = '';
-    for (const model of MODELS) {
+
+    // 1. Create all cards immediately to show the titles/layout
+    const cards = MODELS.map(model => {
         const card = document.createElement('div');
         card.className = 'model-card';
         card.innerHTML = `
             <div class="model-preview" id="preview-${model.id}">
                 <div class="model-tag ${model.tagClass}">${model.tag}</div>
-                <div class="qr-wrapper ${'qr-' + model.id}">
-                    <canvas id="canvas-${model.id}"></canvas>
+                <div class="qr-wrapper ${'qr-' + model.id}" style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
+                    <canvas id="canvas-${model.id}" style="max-width: 120px;"></canvas>
                 </div>
             </div>
             <div class="model-info">
@@ -181,24 +190,29 @@ async function renderModels() {
         `;
         card.onclick = () => openConfirmation(model);
         els.modelsGrid.appendChild(card);
+        return { card, model };
+    });
 
-        // Draw preview QR sequentially with a small delay
-        await new Promise(resolve => setTimeout(async () => {
-            try {
-                const canvasId = `canvas-${model.id}`;
-                console.log(`Drawing QR for ${model.id}...`);
-                await drawQRCode(canvasId, 'https://meuqrcode.com', {
-                    width: 180,
-                    ...model.options
-                });
-            } catch (err) {
-                console.error(`Error drawing QR for ${model.id}:`, err);
-            } finally {
-                resolve();
-            }
-        }, 100)); // Small delay between each QR draw
+    // 2. Draw QR codes sequentially during idle time
+    for (const { model } of cards) {
+        await new Promise(resolve => {
+            onIdle(async () => {
+                try {
+                    const canvasId = `canvas-${model.id}`;
+                    await drawQRCode(canvasId, 'https://meuqrcode.com', {
+                        width: 120, // Lower resolution for preview
+                        ...model.options
+                    });
+                } catch (err) {
+                    console.error(`Error drawing QR for ${model.id}:`, err);
+                } finally {
+                    resolve();
+                }
+            });
+        });
     }
 }
+
 
 function openConfirmation(model) {
     selectedModel = model;
