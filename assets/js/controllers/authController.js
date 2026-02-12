@@ -5,8 +5,10 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  deleteUser
+  deleteUser,
+  updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
 
 export async function loginWithEmail(email, password) {
   return signInWithEmailAndPassword(auth, email, password);
@@ -15,9 +17,9 @@ export async function loginWithEmail(email, password) {
 export async function registerWithEmail(email, password) {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
-  
+
   console.log('Usuário criado no Auth, criando perfil no Firestore...');
-  
+
   // Cria o perfil do usuário com isAdmin: false
   try {
     await createUserProfile(user.uid, {
@@ -29,7 +31,7 @@ export async function registerWithEmail(email, password) {
     alert(`Atenção: Usuário criado, mas houve erro ao salvar dados adicionais: ${error.message}\nVerifique as Regras de Segurança no Firebase Console.`);
     throw error;
   }
-  
+
   return userCredential;
 }
 
@@ -42,11 +44,11 @@ export async function deleteCurrentUser() {
   if (user) {
     // 1. Deleta o perfil no Firestore (users/{uid})
     try {
-        await deleteUserProfile(user.uid);
-        console.log('Perfil Firestore deletado.');
+      await deleteUserProfile(user.uid);
+      console.log('Perfil Firestore deletado.');
     } catch (e) {
-        console.error('Erro ao deletar perfil Firestore (pode não existir):', e);
-        // Não impede a deleção da conta Auth se o perfil já não existir
+      console.error('Erro ao deletar perfil Firestore (pode não existir):', e);
+      // Não impede a deleção da conta Auth se o perfil já não existir
     }
 
     // 2. Deleta a conta de autenticação
@@ -55,6 +57,13 @@ export async function deleteCurrentUser() {
     await deleteUser(user);
   }
 }
+
+export async function updateAuthProfile(data) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Usuário não autenticado');
+  return updateProfile(user, data);
+}
+
 
 export function observeAuth(onAuth, onUnauth) {
   onAuthStateChanged(auth, (user) => {
