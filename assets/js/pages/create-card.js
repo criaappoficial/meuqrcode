@@ -223,13 +223,14 @@ function openConfirmation(model) {
     setTimeout(async () => {
         try {
             await drawQRCode('modalCanvas', 'https://meuqrcode.com', {
-                width: 220,
+                width: 180, // Reduced from 220
                 ...model.options
             });
         } catch (err) {
             console.error('Error drawing modal QR:', err);
         }
     }, 50);
+
 }
 
 if (els.closeModal) els.closeModal.onclick = () => els.confirmModal.classList.add('hidden');
