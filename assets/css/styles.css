@@ -342,16 +342,51 @@ select:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .modal {
   background: #fff;
   border-radius: var(--radius-lg);
-  width: min(420px, 100%);
+  width: 100%;
+  max-width: 450px;
   padding: 2rem;
   box-shadow: var(--shadow);
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.modal::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+@media (max-width: 480px) {
+  .modal {
+    padding: 1.25rem;
+    max-height: 95vh;
+  }
+  
+  /* Força ajuste de padding em modal-body que tenha estilo inline */
+  .modal-body {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+  }
 }
 
 .modal-header {
