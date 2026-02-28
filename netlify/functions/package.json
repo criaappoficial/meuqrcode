@@ -1,0 +1,8 @@
+{
+    "name": "netlify-functions",
+    "version": "1.0.0",
+    "description": "Netlify Functions for MeuQRCode",
+    "dependencies": {
+        "mercadopago": "^2.12.0"
+    }
+}
