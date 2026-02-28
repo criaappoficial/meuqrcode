@@ -78,7 +78,8 @@ const els = {
     okBlockModal: document.getElementById('okBlockModal'),
     closeBlockModal: document.getElementById('closeBlockModal'),
     planSummary: document.getElementById('planSummaryContainer'),
-    btnCheckout: document.getElementById('btnCheckoutAccess')
+    btnCheckout: document.getElementById('btnCheckoutAccess'),
+    menuAdmin: document.getElementById('menu-admin')
 };
 
 
@@ -152,21 +153,29 @@ let currentUserEmail = null;
 observeAuth(async (user) => {
     currentUserId = user.uid;
     currentUserEmail = user.email;
-    loadUserData(user);
-    renderModels();
-}, () => window.location.replace('../login.html'));
 
-async function loadUserData(user) {
+    // Load Firestore profile to check isAdmin
     const profile = await getUserProfile(user.uid);
-    const photoURL = profile?.photoURL || user.photoURL;
+    if (profile && profile.isAdmin && els.menuAdmin) {
+        els.menuAdmin.classList.remove('hidden');
+    }
+
     if (els.userAvatar) {
+        const photoURL = profile?.photoURL || user.photoURL;
         if (photoURL) {
             els.userAvatar.innerHTML = `<img src="${photoURL}" style="width:100%; height:100%; object-fit:cover;">`;
         } else {
             els.userAvatar.innerHTML = `<i class="fas fa-user"></i>`;
         }
     }
-}
+
+    if (els.fixedUser) {
+        els.fixedUser.value = (profile?.displayName || user.displayName || 'user').toLowerCase().replace(/\s+/g, '-');
+    }
+
+    renderModels();
+}, () => window.location.replace('../login.html'));
+
 
 async function renderModels() {
     console.log('Rendering models...');
