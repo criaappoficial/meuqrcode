@@ -324,7 +324,8 @@ function showPremiumBlock(model, reason = 'customization') {
                         itemId: reason
                     };
 
-                    const response = await fetch('http://localhost:5002/createPreference', {
+                    const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:5002/createPreference' : '/.netlify/functions/createPreference';
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
