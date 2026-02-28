@@ -253,6 +253,8 @@
                     <li><a href="dashboard.html"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
                     <li><a href="create-card.html" class="active"><i class="fas fa-id-card"></i><span>Criar
                                 Cartão</span></a></li>
+                    <li><a href="dashboard.html#payments"><i class="fas fa-credit-card"></i><span>Meus
+                                Pagamentos</span></a></li>
                     <li><a href="dashboard.html#settings"><i class="fas fa-cog"></i><span>Configurações</span></a></li>
 
                 </ul>
@@ -464,12 +466,15 @@
                     Este modelo faz parte do nosso conjunto de designs premium.
                 </p>
                 <p style="color: var(--text); font-weight: 500; margin-bottom: 1rem;">
-                    Fale conosco para liberar este e outros estilos agora:
+                    Assine para liberar os recursos Premium agora:
                 </p>
-                <a id="btnWhatsappAccess" href="https://wa.me/5588933005519" target="_blank" class="btn btn-success"
+                <a id="btnCheckoutAccess" href="https://mpago.la/2T8o4q4" target="_blank" class="btn btn-primary"
                     style="width: 100%; justify-content: center; margin-bottom: 1rem; font-size: 1.1rem; padding: 1.2rem;">
-                    <i class="fab fa-whatsapp" style="font-size: 1.4rem;"></i> Liberar Estilos Premium
+                    <i class="fas fa-credit-card" style="font-size: 1.4rem;"></i> Assinar com Mercado Pago
                 </a>
+                <p style="font-size: 0.9rem; color: var(--text-dim); margin-top: 1rem;">
+                    Após o pagamento, o seu acesso pode levar alguns minutos para ser liberado.
+                </p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="okBlockModal" style="width: 100%;">Voltar aos Modelos</button>
@@ -478,6 +483,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
 
     <script type="module" src="../assets/js/pages/create-card.js"></script>
 </body>

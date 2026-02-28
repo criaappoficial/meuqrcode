@@ -4,7 +4,8 @@ import { QRController, drawQRCode, downloadQRCode, drawQRCodeSvg, downloadQRCode
 import { PricingModel } from '../models/pricingModel.js';
 import { StatsController } from '../controllers/statsController.js';
 import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
-import { auth } from '../core/firebase.js';
+import { auth, db } from '../core/firebase.js';
+import { collection, query, where, getDocs, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 
 
@@ -60,8 +61,16 @@ const els = {
   btnBackDashboard2: document.getElementById('btn-back-dashboard-2'),
 
   // Menu Links
+  menuPayments: document.getElementById('menu-payments'),
   menuSettings: document.getElementById('menu-settings'),
   menuDashboard: document.querySelector('a[href="dashboard.html"]'),
+
+  // Views
+  paymentHistoryView: document.getElementById('payment-history-view'),
+  paymentsTableBody: document.getElementById('payments-table-body'),
+  paymentsContainer: document.getElementById('payments-container'),
+  paymentsLoading: document.getElementById('payments-loading'),
+  paymentsEmptyState: document.getElementById('payments-empty-state'),
 
   // Delete Account Modal
   btnDeleteAccount: document.getElementById('btn-delete-account'),
@@ -129,26 +138,46 @@ const showDashboard = () => {
   els.newQrView.classList.add('hidden');
   els.settingsView?.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.add('hidden');
   els.dashboardView.classList.remove('hidden');
 
 
   // Update Active Menu
   els.menuDashboard?.classList.add('active');
   els.menuSettings?.classList.remove('active');
+  els.menuPayments?.classList.remove('active');
 
   loadDashboard(); // Refresh data
 };
 
-const showNewQr = () => {
-  // selectedDocId = null; // Removed: selectedDocId should be managed by caller (btnNewQr or edit action)
+const showPaymentHistory = (e) => {
+  e?.preventDefault();
   els.dashboardView.classList.add('hidden');
+  els.newQrView.classList.add('hidden');
   els.settingsView?.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.remove('hidden');
+
+  // Update Active Menu
+  els.menuDashboard?.classList.remove('active');
+  els.menuSettings?.classList.remove('active');
+  els.menuPayments?.classList.add('active');
+
+  loadPaymentHistory();
+};
+
+const showNewQr = () => {
+  // selectedDocId = null; // Removed: selectedDocId should be managed by caller (btnNewQr or edit action)
+  els.newQrView.classList.add('hidden');
+  els.settingsView?.classList.add('hidden');
+  els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.add('hidden');
   els.newQrView.classList.remove('hidden');
 
 
   els.menuDashboard?.classList.remove('active');
   els.menuSettings?.classList.remove('active');
+  els.menuPayments?.classList.remove('active');
 
   // Reset form
   els.form.reset();
@@ -174,12 +203,14 @@ const showSettings = (e) => {
   els.dashboardView.classList.add('hidden');
   els.newQrView.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.add('hidden');
   els.settingsView?.classList.remove('hidden');
 
 
   // Update Active Menu
   els.menuDashboard?.classList.remove('active');
   els.menuSettings?.classList.add('active');
+  els.menuPayments?.classList.remove('active');
 };
 
 const showProfileEdit = () => {
@@ -208,6 +239,7 @@ els.btnNewQr?.addEventListener('click', () => {
 
 // Menu Listeners
 els.menuSettings?.addEventListener('click', showSettings);
+els.menuPayments?.addEventListener('click', showPaymentHistory);
 els.btnEditProfile?.addEventListener('click', showProfileEdit);
 els.btnBackSettings?.addEventListener('click', showSettings);
 els.btnCancelProfile?.addEventListener('click', showSettings);
@@ -426,8 +458,20 @@ observeAuth(async (user) => {
   // Handle hash-based navigation (from other pages)
   if (window.location.hash === '#settings') {
     setTimeout(() => showSettings(), 100);
+  } else if (window.location.hash === '#payments') {
+    setTimeout(() => showPaymentHistory(), 100);
   }
 }, () => window.location.replace('../login.html'));
+
+window.addEventListener('hashchange', () => {
+  if (window.location.hash === '#settings') {
+    showSettings();
+  } else if (window.location.hash === '#payments') {
+    showPaymentHistory();
+  } else if (window.location.hash === '' || window.location.hash === '#dashboard') {
+    showDashboard();
+  }
+});
 
 
 // =========================================================
@@ -1154,6 +1198,86 @@ async function loadDashboard() {
   }
 }
 
+async function loadPaymentHistory() {
+  if (!currentUserId) return;
+
+  try {
+    toggleState(els.paymentsLoading, true);
+    toggleState(els.paymentsContainer, false);
+    toggleState(els.paymentsEmptyState, false);
+
+    const paymentsRef = collection(db, "payments");
+    const q = query(
+      paymentsRef,
+      where("userId", "==", currentUserId),
+      orderBy("dateCreated", "desc"),
+      limit(50)
+    );
+
+    const querySnapshot = await getDocs(q).catch(err => {
+      // If index is missing, we might need a simpler query or to alert the user
+      console.warn("Firestore query failed, might need index:", err);
+      return getDocs(query(paymentsRef, where("userId", "==", currentUserId)));
+    });
+
+    const payments = [];
+    querySnapshot.forEach((doc) => {
+      payments.push(doc.data());
+    });
+
+    // Fallback sort if query index was missing
+    if (payments.length > 0 && (!querySnapshot.query?.orderBy || querySnapshot.query.orderBy.length === 0)) {
+      payments.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated));
+    }
+
+    toggleState(els.paymentsLoading, false);
+
+    if (payments.length === 0) {
+      toggleState(els.paymentsEmptyState, true);
+      return;
+    }
+
+    toggleState(els.paymentsContainer, true);
+
+    renderRows(els.paymentsTableBody, payments, (pay) => {
+      const date = pay.dateCreated ? new Date(pay.dateCreated).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) : 'N/A';
+
+      const statusMap = {
+        'approved': { label: 'Aprovado', class: 'badge-active' },
+        'pending': { label: 'Pendente', class: 'badge-warning' },
+        'in_process': { label: 'Processando', class: 'badge-warning' },
+        'rejected': { label: 'Rejeitado', class: 'badge-inactive' },
+        'cancelled': { label: 'Cancelado', class: 'badge-inactive' }
+      };
+
+      const status = statusMap[pay.status] || { label: pay.status, class: '' };
+      const amount = pay.amount ? pay.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'N/A';
+
+      return `
+        <tr>
+          <td>${date}</td>
+          <td>${pay.itemId === 'premium_subscription' ? 'Assinatura Premium' : pay.itemId}</td>
+          <td>${amount}</td>
+          <td><span class="badge ${status.class}">${status.label}</span></td>
+          <td><small>${pay.paymentId}</small></td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    toggleState(els.paymentsLoading, false);
+    console.error("Error loading payments:", error);
+    showAlert(els.alert, 'Erro ao carregar histórico de pagamentos.', 'error');
+  }
+}
+
+
 function truncate(text = '', size = 48) {
   return text.length > size ? `${text.substring(0, size)}…` : text;
 }
@@ -1169,36 +1293,70 @@ function updatePricingUI(qrCodes) {
     planCostEl.title = `Plano: ${pricing.breakdown.activeQRs} ativos (${pricing.breakdown.extraQRs} extras), ${pricing.breakdown.paidColors} cores pagas.`;
   }
 
-  // Update WhatsApp Link in Modal AND Summary Container
-  const btnWhatsapp = document.getElementById('btnWhatsappAccess');
+  // Update Summary Container
+  const btnCheckout = document.getElementById('btnCheckoutAccess');
   const summaryContainer = document.getElementById('planSummaryContainer');
 
-  if (btnWhatsapp || summaryContainer) {
-    const breakdown = pricing.breakdown;
-    let featuresText = `*Resumo do Plano:*%0A`;
-    featuresText += `- Total QR Codes Ativos: ${breakdown.activeQRs}%0A`;
-    if (breakdown.extraQRs > 0) featuresText += `- QR Codes Extras (Pagos): ${breakdown.extraQRs}%0A`;
-    if (breakdown.paidColors > 0) featuresText += `- Personalizações de Cor: ${breakdown.paidColors}%0A`;
-    if (breakdown.sizeCost > 0) featuresText += `- Adicional de Tamanho: ${breakdown.sizeCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}%0A`;
+  if (btnCheckout) {
+    // Remove previous listeners to avoid duplicates if updatePricingUI is called multiple times
+    const newBtn = btnCheckout.cloneNode(true);
+    btnCheckout.parentNode.replaceChild(newBtn, btnCheckout);
 
-    const message = `Olá! Gostaria de liberar meu acesso ao MeuQRCode.%0A%0A` +
-      `*Valor Mensal:* ${pricing.formattedTotal}%0A` +
-      `${featuresText}%0A` +
-      `Aguardo instruções para pagamento e liberação.`;
+    newBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
 
-    if (btnWhatsapp) {
-      btnWhatsapp.href = `https://wa.me/5588933005519?text=${message}`;
-    }
+      const originalText = newBtn.innerHTML;
+      newBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando Pagamento...';
+      newBtn.disabled = true;
 
-    if (summaryContainer) {
-      let htmlSummary = `<strong>Valor Mensal: <span style="color:var(--primary); font-size:1.1rem;">${pricing.formattedTotal}</span></strong><br><br>`;
-      htmlSummary += `<ul style="list-style:none; padding:0; margin:0;">`;
-      htmlSummary += `<li><i class="fas fa-check-circle" style="color:var(--success); margin-right:6px;"></i> Total QR Codes Ativos: <strong>${breakdown.activeQRs}</strong></li>`;
-      if (breakdown.extraQRs > 0) htmlSummary += `<li><i class="fas fa-plus-circle" style="color:var(--primary); margin-right:6px;"></i> Extras (Pagos): <strong>${breakdown.extraQRs}</strong></li>`;
-      if (breakdown.paidColors > 0) htmlSummary += `<li><i class="fas fa-palette" style="color:var(--primary); margin-right:6px;"></i> Cores Pagas: <strong>${breakdown.paidColors}</strong></li>`;
-      if (breakdown.sizeCost > 0) htmlSummary += `<li><i class="fas fa-expand" style="color:var(--primary); margin-right:6px;"></i> Adicional Tamanho: <strong>${breakdown.sizeCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></li>`;
-      htmlSummary += `</ul>`;
-      summaryContainer.innerHTML = htmlSummary;
-    }
+      try {
+        const payload = {
+          title: `Plano Premium - ${pricing.breakdown.activeQRs} QRs`,
+          unit_price: Number(pricing.total),
+          quantity: 1,
+          userId: window.currentUserId || "unknownUser",
+          itemId: "premium_subscription"
+        };
+
+        const response = await fetch('http://localhost:5002/createPreference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.id) {
+          const mp = new MercadoPago('APP_USR-17381018-de8e-44a4-bfb7-e1303b6f6d19', { locale: 'pt-BR' });
+          mp.checkout({
+            preference: { id: data.id },
+            autoOpen: true
+          });
+        } else {
+          throw new Error('Invalid preference data received');
+        }
+        // Optionally close the modal while MP opens
+        const blockModal = document.getElementById('blockModal');
+        if (blockModal) blockModal.classList.add('hidden');
+
+      } catch (error) {
+        console.error("Erro no MP:", error);
+        alert("Ocorreu um erro ao iniciar o pagamento. Tente novamente.");
+      } finally {
+        newBtn.innerHTML = originalText;
+        newBtn.disabled = false;
+      }
+    });
+  }
+
+  if (summaryContainer) {
+    let htmlSummary = `<strong>Valor Mensal: <span style="color:var(--primary); font-size:1.1rem;">${pricing.formattedTotal}</span></strong><br><br>`;
+    htmlSummary += `<ul style="list-style:none; padding:0; margin:0;">`;
+    htmlSummary += `<li><i class="fas fa-check-circle" style="color:var(--success); margin-right:6px;"></i> Total QR Codes Ativos: <strong>${pricing.breakdown.activeQRs}</strong></li>`;
+    if (pricing.breakdown.extraQRs > 0) htmlSummary += `<li><i class="fas fa-plus-circle" style="color:var(--primary); margin-right:6px;"></i> Extras (Pagos): <strong>${pricing.breakdown.extraQRs}</strong></li>`;
+    if (pricing.breakdown.paidColors > 0) htmlSummary += `<li><i class="fas fa-palette" style="color:var(--primary); margin-right:6px;"></i> Cores Pagas: <strong>${pricing.breakdown.paidColors}</strong></li>`;
+    if (pricing.breakdown.sizeCost > 0) htmlSummary += `<li><i class="fas fa-expand" style="color:var(--primary); margin-right:6px;"></i> Adicional Tamanho: <strong>${pricing.breakdown.sizeCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></li>`;
+    htmlSummary += `</ul>`;
+    summaryContainer.innerHTML = htmlSummary;
   }
 }

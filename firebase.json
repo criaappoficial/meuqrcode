@@ -3,6 +3,9 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "public": ".",
     "ignore": [
@@ -34,5 +37,10 @@
         "destination": "/page/index.html"
       }
     ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    }
   }
 }

@@ -52,6 +52,12 @@
           </li>
 
           <li>
+            <a href="#" id="menu-payments">
+              <i class="fas fa-credit-card"></i>
+              <span>Meus Pagamentos</span>
+            </a>
+          </li>
+          <li>
             <a href="#" id="menu-settings">
               <i class="fas fa-cog"></i>
               <span>Configurações</span>
@@ -324,6 +330,48 @@
         </div>
       </section>
 
+      <!-- Payment History View -->
+      <section id="payment-history-view" class="card hidden">
+        <div class="card-header">
+          <div class="title-group">
+            <h2 class="card-title">Histórico de Pagamentos</h2>
+            <p style="color:var(--text-dim); font-size:0.9rem; margin-top:0.25rem;">Veja o status e detalhes dos seus
+              pagamentos</p>
+          </div>
+        </div>
+
+        <div id="payments-loading" class="text-center" style="padding:2rem;">
+          <div class="loading" style="margin:auto;"></div>
+          <p style="margin-top:1rem; color:var(--text-dim);">Carregando pagamentos...</p>
+        </div>
+
+        <div id="payments-container" class="hidden">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Item</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>ID</th>
+                </tr>
+              </thead>
+              <tbody id="payments-table-body">
+                <!-- Rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="payments-empty-state" class="empty-state hidden">
+            <div class="empty-state-icon">
+              <i class="fas fa-credit-card"></i>
+            </div>
+            <h3>Nenhum pagamento encontrado</h3>
+            <p>Seus pagamentos realizados aparecerão aqui.</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Settings View -->
       <section id="settings-view" class="card hidden">
         <div class="card-header">
@@ -535,14 +583,14 @@
           Para garantir a segurança e qualidade do serviço, esta funcionalidade é liberada mediante ativação.
         </p>
         <p style="color: var(--text); font-weight: 500; margin-bottom: 1rem;">
-          Fale conosco para liberar seu acesso imediatamente:
+          Assine para liberar os recursos Premium agora:
         </p>
-        <a id="btnWhatsappAccess" href="https://wa.me/5588933005519" target="_blank" class="btn btn-success"
+        <a id="btnCheckoutAccess" href="https://mpago.la/2T8o4q4" target="_blank" class="btn btn-primary"
           style="width: 100%; justify-content: center; margin-bottom: 1rem; font-size: 1.1rem; padding: 1rem;">
-          <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> Liberar Acesso Agora
+          <i class="fas fa-credit-card" style="font-size: 1.3rem;"></i> Assinar com Mercado Pago
         </a>
-        <p style="font-size: 0.9rem; color: var(--text-dim);">
-          (88) 93300-5519
+        <p style="font-size: 0.9rem; color: var(--text-dim); margin-top: 1rem;">
+          Após o pagamento, o seu acesso pode levar alguns minutos para ser liberado.
         </p>
       </div>
       <div class="modal-footer">
@@ -552,6 +600,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
   <script>
     /* Restore sidebar state immediately to prevent FOUC */
     (function () {
