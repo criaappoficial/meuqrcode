@@ -324,12 +324,11 @@ function showPremiumBlock(model, reason = 'customization') {
                     const data = await response.json();
 
                     if (data.id) {
-                        const mp = new MercadoPago('TEST-95669c81-41ac-44a6-91aa-f8d94f670baa', { locale: 'pt-BR' });
+                        const mp = new MercadoPago('APP_USR-17381018-de8e-44a4-bfb7-e1303b6f6d19', { locale: 'pt-BR' });
                         mp.checkout({
                             preference: { id: data.id },
                             autoOpen: true
                         });
-
                         if (els.blockModal) els.blockModal.classList.add('hidden');
                     } else {
                         throw new Error(data.error || "Erro ao gerar preferência");

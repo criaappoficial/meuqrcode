@@ -7,7 +7,7 @@ const express = require('express');
 const cors = require('cors');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 
-const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || "TEST-1425166093599192-071000-35d2dcf3bb9e44ec807e8788223a816c-147885044";
+const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || "APP_USR-1425166093599192-071000-a564f028752f9b275f64f7e9a4eb716e-147885044";
 const client = new MercadoPagoConfig({ accessToken: MP_ACCESS_TOKEN, options: { timeout: 5000 } });
 
 const app = express();
@@ -32,9 +32,9 @@ app.post('/createPreference', async (req, res) => {
             }],
             metadata: { user_id: userId, item_id: itemId || "premium_feature" },
             back_urls: {
-                success: "http://localhost:5500/page/dashboard.html?payment=success",
-                failure: "http://localhost:5500/page/dashboard.html?payment=failure",
-                pending: "http://localhost:5500/page/dashboard.html?payment=pending",
+                success: "https://meuqrcode.com/page/dashboard.html?payment=success",
+                failure: "https://meuqrcode.com/page/dashboard.html?payment=failure",
+                pending: "https://meuqrcode.com/page/dashboard.html?payment=pending",
             },
             auto_return: undefined,
         };
