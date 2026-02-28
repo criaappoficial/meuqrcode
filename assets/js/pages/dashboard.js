@@ -4,7 +4,8 @@ import { QRController, drawQRCode, downloadQRCode, drawQRCodeSvg, downloadQRCode
 import { PricingModel } from '../models/pricingModel.js';
 import { StatsController } from '../controllers/statsController.js';
 import { showAlert, toggleState, renderRows, formatDate } from '../views/ui.js';
-import { auth } from '../core/firebase.js';
+import { auth, db } from '../core/firebase.js';
+import { collection, query, where, getDocs, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 
 
@@ -60,8 +61,16 @@ const els = {
   btnBackDashboard2: document.getElementById('btn-back-dashboard-2'),
 
   // Menu Links
+  menuPayments: document.getElementById('menu-payments'),
   menuSettings: document.getElementById('menu-settings'),
   menuDashboard: document.querySelector('a[href="dashboard.html"]'),
+
+  // Views
+  paymentHistoryView: document.getElementById('payment-history-view'),
+  paymentsTableBody: document.getElementById('payments-table-body'),
+  paymentsContainer: document.getElementById('payments-container'),
+  paymentsLoading: document.getElementById('payments-loading'),
+  paymentsEmptyState: document.getElementById('payments-empty-state'),
 
   // Delete Account Modal
   btnDeleteAccount: document.getElementById('btn-delete-account'),
@@ -129,26 +138,46 @@ const showDashboard = () => {
   els.newQrView.classList.add('hidden');
   els.settingsView?.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.add('hidden');
   els.dashboardView.classList.remove('hidden');
 
 
   // Update Active Menu
   els.menuDashboard?.classList.add('active');
   els.menuSettings?.classList.remove('active');
+  els.menuPayments?.classList.remove('active');
 
   loadDashboard(); // Refresh data
 };
 
-const showNewQr = () => {
-  // selectedDocId = null; // Removed: selectedDocId should be managed by caller (btnNewQr or edit action)
+const showPaymentHistory = (e) => {
+  e?.preventDefault();
   els.dashboardView.classList.add('hidden');
+  els.newQrView.classList.add('hidden');
   els.settingsView?.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.remove('hidden');
+
+  // Update Active Menu
+  els.menuDashboard?.classList.remove('active');
+  els.menuSettings?.classList.remove('active');
+  els.menuPayments?.classList.add('active');
+
+  loadPaymentHistory();
+};
+
+const showNewQr = () => {
+  // selectedDocId = null; // Removed: selectedDocId should be managed by caller (btnNewQr or edit action)
+  els.newQrView.classList.add('hidden');
+  els.settingsView?.classList.add('hidden');
+  els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.add('hidden');
   els.newQrView.classList.remove('hidden');
 
 
   els.menuDashboard?.classList.remove('active');
   els.menuSettings?.classList.remove('active');
+  els.menuPayments?.classList.remove('active');
 
   // Reset form
   els.form.reset();
@@ -174,12 +203,14 @@ const showSettings = (e) => {
   els.dashboardView.classList.add('hidden');
   els.newQrView.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
+  els.paymentHistoryView?.classList.add('hidden');
   els.settingsView?.classList.remove('hidden');
 
 
   // Update Active Menu
   els.menuDashboard?.classList.remove('active');
   els.menuSettings?.classList.add('active');
+  els.menuPayments?.classList.remove('active');
 };
 
 const showProfileEdit = () => {
@@ -208,6 +239,7 @@ els.btnNewQr?.addEventListener('click', () => {
 
 // Menu Listeners
 els.menuSettings?.addEventListener('click', showSettings);
+els.menuPayments?.addEventListener('click', showPaymentHistory);
 els.btnEditProfile?.addEventListener('click', showProfileEdit);
 els.btnBackSettings?.addEventListener('click', showSettings);
 els.btnCancelProfile?.addEventListener('click', showSettings);
@@ -426,8 +458,20 @@ observeAuth(async (user) => {
   // Handle hash-based navigation (from other pages)
   if (window.location.hash === '#settings') {
     setTimeout(() => showSettings(), 100);
+  } else if (window.location.hash === '#payments') {
+    setTimeout(() => showPaymentHistory(), 100);
   }
 }, () => window.location.replace('../login.html'));
+
+window.addEventListener('hashchange', () => {
+  if (window.location.hash === '#settings') {
+    showSettings();
+  } else if (window.location.hash === '#payments') {
+    showPaymentHistory();
+  } else if (window.location.hash === '' || window.location.hash === '#dashboard') {
+    showDashboard();
+  }
+});
 
 
 // =========================================================
@@ -1153,6 +1197,86 @@ async function loadDashboard() {
     console.error(error);
   }
 }
+
+async function loadPaymentHistory() {
+  if (!currentUserId) return;
+
+  try {
+    toggleState(els.paymentsLoading, true);
+    toggleState(els.paymentsContainer, false);
+    toggleState(els.paymentsEmptyState, false);
+
+    const paymentsRef = collection(db, "payments");
+    const q = query(
+      paymentsRef,
+      where("userId", "==", currentUserId),
+      orderBy("dateCreated", "desc"),
+      limit(50)
+    );
+
+    const querySnapshot = await getDocs(q).catch(err => {
+      // If index is missing, we might need a simpler query or to alert the user
+      console.warn("Firestore query failed, might need index:", err);
+      return getDocs(query(paymentsRef, where("userId", "==", currentUserId)));
+    });
+
+    const payments = [];
+    querySnapshot.forEach((doc) => {
+      payments.push(doc.data());
+    });
+
+    // Fallback sort if query index was missing
+    if (payments.length > 0 && (!querySnapshot.query?.orderBy || querySnapshot.query.orderBy.length === 0)) {
+      payments.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated));
+    }
+
+    toggleState(els.paymentsLoading, false);
+
+    if (payments.length === 0) {
+      toggleState(els.paymentsEmptyState, true);
+      return;
+    }
+
+    toggleState(els.paymentsContainer, true);
+
+    renderRows(els.paymentsTableBody, payments, (pay) => {
+      const date = pay.dateCreated ? new Date(pay.dateCreated).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) : 'N/A';
+
+      const statusMap = {
+        'approved': { label: 'Aprovado', class: 'badge-active' },
+        'pending': { label: 'Pendente', class: 'badge-warning' },
+        'in_process': { label: 'Processando', class: 'badge-warning' },
+        'rejected': { label: 'Rejeitado', class: 'badge-inactive' },
+        'cancelled': { label: 'Cancelado', class: 'badge-inactive' }
+      };
+
+      const status = statusMap[pay.status] || { label: pay.status, class: '' };
+      const amount = pay.amount ? pay.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'N/A';
+
+      return `
+        <tr>
+          <td>${date}</td>
+          <td>${pay.itemId === 'premium_subscription' ? 'Assinatura Premium' : pay.itemId}</td>
+          <td>${amount}</td>
+          <td><span class="badge ${status.class}">${status.label}</span></td>
+          <td><small>${pay.paymentId}</small></td>
+        </tr>
+      `;
+    });
+
+  } catch (error) {
+    toggleState(els.paymentsLoading, false);
+    console.error("Error loading payments:", error);
+    showAlert(els.alert, 'Erro ao carregar histórico de pagamentos.', 'error');
+  }
+}
+
 
 function truncate(text = '', size = 48) {
   return text.length > size ? `${text.substring(0, size)}…` : text;

@@ -52,6 +52,12 @@
           </li>
 
           <li>
+            <a href="#" id="menu-payments">
+              <i class="fas fa-credit-card"></i>
+              <span>Meus Pagamentos</span>
+            </a>
+          </li>
+          <li>
             <a href="#" id="menu-settings">
               <i class="fas fa-cog"></i>
               <span>Configurações</span>
@@ -320,6 +326,48 @@
             <button type="button" class="btn btn-secondary" id="btn-back-dashboard-2">
               <i class="fas fa-arrow-left"></i> Voltar ao Painel
             </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Payment History View -->
+      <section id="payment-history-view" class="card hidden">
+        <div class="card-header">
+          <div class="title-group">
+            <h2 class="card-title">Histórico de Pagamentos</h2>
+            <p style="color:var(--text-dim); font-size:0.9rem; margin-top:0.25rem;">Veja o status e detalhes dos seus
+              pagamentos</p>
+          </div>
+        </div>
+
+        <div id="payments-loading" class="text-center" style="padding:2rem;">
+          <div class="loading" style="margin:auto;"></div>
+          <p style="margin-top:1rem; color:var(--text-dim);">Carregando pagamentos...</p>
+        </div>
+
+        <div id="payments-container" class="hidden">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Item</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>ID</th>
+                </tr>
+              </thead>
+              <tbody id="payments-table-body">
+                <!-- Rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="payments-empty-state" class="empty-state hidden">
+            <div class="empty-state-icon">
+              <i class="fas fa-credit-card"></i>
+            </div>
+            <h3>Nenhum pagamento encontrado</h3>
+            <p>Seus pagamentos realizados aparecerão aqui.</p>
           </div>
         </div>
       </section>

@@ -83,21 +83,44 @@ exports.mercadopagoWebhook = functions.https.onRequest(async (req, res) => {
         if (!paymentId) return res.status(400).send("Missing payment id");
 
         try {
-            // Fetch payment details to verify it's approved and get metadata
-            // Assuming user will use the latest mp SDK, we would fetch payment here.
-            // For simplicity in webhook, we acknowledge receipt immediately
-
             console.log(`Payment webhook received for ID: ${paymentId}`);
 
-            // Here you'd use the Payment class from mercadopago to fetch details
-            // const { Payment } = require('mercadopago');
-            // const paymentClient = new Payment(client);
-            // const paymentInfo = await paymentClient.get({ id: paymentId });
+            const { Payment } = require('mercadopago');
+            const paymentClient = new Payment(client);
+            const paymentInfo = await paymentClient.get({ id: paymentId });
 
-            // if (paymentInfo.status === 'approved') {
-            //    const userId = paymentInfo.metadata.user_id;
-            //    await db.collection("users").doc(userId).update({ isVip: true });
-            // }
+            if (paymentInfo) {
+                const userId = paymentInfo.metadata?.user_id;
+                const status = paymentInfo.status;
+                const amount = paymentInfo.transaction_amount;
+                const dateCreated = paymentInfo.date_created;
+                const itemId = paymentInfo.metadata?.item_id;
+
+                console.log(`Payment status for ${paymentId}: ${status}`);
+
+                // Store in payments collection
+                const paymentData = {
+                    paymentId: String(paymentId),
+                    userId: userId || 'unknown',
+                    itemId: itemId || 'premium_feature',
+                    status: status,
+                    amount: amount,
+                    currency: paymentInfo.currency_id,
+                    dateCreated: dateCreated,
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    rawStatus: paymentInfo.status_detail
+                };
+
+                await admin.firestore().collection("payments").doc(String(paymentId)).set(paymentData, { merge: true });
+
+                if (status === 'approved' && userId) {
+                    await admin.firestore().collection("users").doc(userId).update({
+                        isVip: true,
+                        lastPaymentId: String(paymentId),
+                        vipUntil: admin.firestore.FieldValue.serverTimestamp() // Simplification: set it to now or handle subscription logic
+                    });
+                }
+            }
 
             res.status(200).send("OK");
         } catch (error) {
