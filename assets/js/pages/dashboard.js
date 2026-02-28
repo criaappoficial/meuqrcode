@@ -103,6 +103,8 @@ const els = {
   submitBtn: document.getElementById('submitBtn'),
   preview: document.getElementById('qrPreview'),
   qrUrl: document.getElementById('qrUrl'),
+  qrUrlLabel: document.getElementById('qrUrlLabel'),
+  btnCopyQr: document.getElementById('btn-copy-qr'),
   fixedUser: document.getElementById('fixedUser'),
   fixedSlug: document.getElementById('fixedSlug'),
   qrStyle: document.getElementById('qrStyle'),
@@ -751,6 +753,7 @@ els.form?.addEventListener('submit', async (event) => {
     const valueForQr = isPix ? destinationToSave : (resultItem.fixedUrl || composeQrUrl(resultItem.id));
 
     if (els.qrUrl) els.qrUrl.textContent = isPix ? destinationToSave : displayUrl;
+    if (els.qrUrlLabel) els.qrUrlLabel.textContent = isPix ? 'PIX Copia e Cola:' : 'URL Permanente:';
     await drawStyledQR(valueForQr, styleVal, format, sizeVal);
 
     els.preview.classList.remove('hidden');
@@ -784,6 +787,25 @@ els.downloadBtn?.addEventListener('click', () => {
   } else {
     downloadQRCode('qrCanvas', `${filenameBase}.png`);
   }
+});
+
+els.btnCopyQr?.addEventListener('click', () => {
+  const text = els.qrUrl.textContent;
+  if (!text) return;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const icon = els.btnCopyQr.querySelector('i');
+    const originalClass = icon.className;
+    icon.className = 'fas fa-check';
+    els.btnCopyQr.style.color = 'var(--success)';
+
+    setTimeout(() => {
+      icon.className = originalClass;
+      els.btnCopyQr.style.color = 'var(--primary)';
+    }, 2000);
+  }).catch(err => {
+    console.error('Erro ao copiar: ', err);
+  });
 });
 
 // Listener for Style Change
@@ -1001,6 +1023,7 @@ els.tableBody?.addEventListener('click', async (event) => {
     const valueForQr = isPix ? dest : (item.fixedUrl || composeQrUrl(item.id));
 
     if (els.qrUrl) els.qrUrl.textContent = isPix ? dest : displayUrl;
+    if (els.qrUrlLabel) els.qrUrlLabel.textContent = isPix ? 'PIX Copia e Cola:' : 'URL Permanente:';
 
     // Draw
     const format = (els.qrFormat?.value || 'png');

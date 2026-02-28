@@ -317,8 +317,16 @@
               <canvas id="qrCanvas"></canvas>
               <div id="qrSvgWrap" style="display:none; width:320px;"> </div>
               <p style="color:var(--text-dim); text-align:center;">
-                URL Permanente:<br />
-                <code id="qrUrl" style="background:#eee; padding:2px 6px; border-radius:4px;"></code>
+                <span id="qrUrlLabel">URL Permanente:</span><br />
+              <div
+                style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.25rem;">
+                <code id="qrUrl"
+                  style="background:#eee; padding:4px 8px; border-radius:4px; max-width: 100%; word-break: break-all; font-size: 0.85rem;"></code>
+                <button type="button" id="btn-copy-qr" class="icon-button" title="Copiar"
+                  style="background: var(--bg-accent); padding: 6px; border-radius: 6px; color: var(--primary);">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
               </p>
               <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
                 <button type="button" class="btn btn-success" id="downloadBtn">
