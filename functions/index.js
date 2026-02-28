@@ -1,0 +1,101 @@
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const { MercadoPagoConfig, Preference } = require("mercadopago");
+const cors = require("cors")({ origin: true });
+
+admin.initializeApp();
+
+// Test Access Token (replace with production token when going live)
+const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || "TEST-1425166093599192-071000-35d2dcf3bb9e44ec807e8788223a816c-147885044";
+
+const client = new MercadoPagoConfig({ accessToken: MP_ACCESS_TOKEN, options: { timeout: 5000 } });
+
+exports.createPreference = functions.https.onRequest((req, res) => {
+    cors(req, res, async () => {
+        if (req.method !== 'POST') {
+            return res.status(405).send('Method Not Allowed');
+        }
+
+        try {
+            const { title, unit_price, quantity = 1, userId, itemId } = req.body;
+
+            if (!title || !unit_price || !userId) {
+                return res.status(400).json({ error: "Missing required fields: title, unit_price, userId" });
+            }
+
+            // 1. Create Preference payload
+            const preference = new Preference(client);
+
+            const body = {
+                items: [
+                    {
+                        id: itemId || "premium_feature",
+                        title: title,
+                        quantity: Number(quantity),
+                        unit_price: Number(unit_price),
+                        currency_id: "BRL",
+                    },
+                ],
+                metadata: {
+                    user_id: userId,
+                    item_id: itemId || "premium_feature"
+                },
+                back_urls: {
+                    success: "https://meuqrcode.com/dashboard.html?payment=success",
+                    failure: "https://meuqrcode.com/dashboard.html?payment=failure",
+                    pending: "https://meuqrcode.com/dashboard.html?payment=pending",
+                },
+                auto_return: "approved",
+            };
+
+            // 2. Call MP API
+            const result = await preference.create({ body });
+
+            // 3. Return the Preference ID to the frontend
+            res.status(200).json({ id: result.id, init_point: result.init_point });
+
+        } catch (error) {
+            console.error("Error creating preference:", error);
+            res.status(500).json({ error: "Failed to create preference" });
+        }
+    });
+});
+
+exports.mercadopagoWebhook = functions.https.onRequest(async (req, res) => {
+    if (req.method !== "POST") {
+        return res.status(405).send("Method Not Allowed");
+    }
+
+    const topic = req.query.topic || req.body.type;
+
+    if (topic === "payment") {
+        const paymentId = req.query.id || req.body.data?.id;
+
+        if (!paymentId) return res.status(400).send("Missing payment id");
+
+        try {
+            // Fetch payment details to verify it's approved and get metadata
+            // Assuming user will use the latest mp SDK, we would fetch payment here.
+            // For simplicity in webhook, we acknowledge receipt immediately
+
+            console.log(`Payment webhook received for ID: ${paymentId}`);
+
+            // Here you'd use the Payment class from mercadopago to fetch details
+            // const { Payment } = require('mercadopago');
+            // const paymentClient = new Payment(client);
+            // const paymentInfo = await paymentClient.get({ id: paymentId });
+
+            // if (paymentInfo.status === 'approved') {
+            //    const userId = paymentInfo.metadata.user_id;
+            //    await db.collection("users").doc(userId).update({ isVip: true });
+            // }
+
+            res.status(200).send("OK");
+        } catch (error) {
+            console.error("Webhook error:", error);
+            res.status(500).send("Error processing webhook");
+        }
+    } else {
+        res.status(200).send("Handling non-payment topic: " + topic);
+    }
+});

@@ -78,7 +78,7 @@ const els = {
     okBlockModal: document.getElementById('okBlockModal'),
     closeBlockModal: document.getElementById('closeBlockModal'),
     planSummary: document.getElementById('planSummaryContainer'),
-    btnWhatsapp: document.getElementById('btnWhatsappAccess')
+    btnCheckout: document.getElementById('btnCheckoutAccess')
 };
 
 
@@ -294,8 +294,55 @@ function showPremiumBlock(model, reason = 'customization') {
             `;
         }
 
-        if (els.btnWhatsapp) {
-            els.btnWhatsapp.href = `https://wa.me/5588933005519?text=${encodeURIComponent(waMsg + ` (Valor: ${formattedCost})`)}`;
+        if (els.btnCheckout) {
+            const newBtn = els.btnCheckout.cloneNode(true);
+            els.btnCheckout.parentNode.replaceChild(newBtn, els.btnCheckout);
+            els.btnCheckout = newBtn; // Update reference
+
+            newBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                const originalText = newBtn.innerHTML;
+                newBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando Pagamento...';
+                newBtn.disabled = true;
+
+                try {
+                    const payload = {
+                        title: title,
+                        unit_price: Number(cost),
+                        quantity: 1,
+                        userId: window.currentUserId || "unknownUser",
+                        itemId: reason
+                    };
+
+                    const response = await fetch('http://localhost:5002/createPreference', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.id) {
+                        const mp = new MercadoPago('TEST-95669c81-41ac-44a6-91aa-f8d94f670baa', { locale: 'pt-BR' });
+                        mp.checkout({
+                            preference: { id: data.id },
+                            autoOpen: true
+                        });
+
+                        if (els.blockModal) els.blockModal.classList.add('hidden');
+                    } else {
+                        throw new Error(data.error || "Erro ao gerar preferência");
+                    }
+
+                } catch (error) {
+                    console.error("Erro no MP:", error);
+                    alert("Ocorreu um erro ao iniciar o pagamento. Tente novamente.");
+                } finally {
+                    newBtn.innerHTML = originalText;
+                    newBtn.disabled = false;
+                }
+            });
         }
 
         els.blockModal.classList.remove('hidden');

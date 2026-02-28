@@ -1169,36 +1169,71 @@ function updatePricingUI(qrCodes) {
     planCostEl.title = `Plano: ${pricing.breakdown.activeQRs} ativos (${pricing.breakdown.extraQRs} extras), ${pricing.breakdown.paidColors} cores pagas.`;
   }
 
-  // Update WhatsApp Link in Modal AND Summary Container
-  const btnWhatsapp = document.getElementById('btnWhatsappAccess');
+  // Update Summary Container
+  const btnCheckout = document.getElementById('btnCheckoutAccess');
   const summaryContainer = document.getElementById('planSummaryContainer');
 
-  if (btnWhatsapp || summaryContainer) {
-    const breakdown = pricing.breakdown;
-    let featuresText = `*Resumo do Plano:*%0A`;
-    featuresText += `- Total QR Codes Ativos: ${breakdown.activeQRs}%0A`;
-    if (breakdown.extraQRs > 0) featuresText += `- QR Codes Extras (Pagos): ${breakdown.extraQRs}%0A`;
-    if (breakdown.paidColors > 0) featuresText += `- Personalizações de Cor: ${breakdown.paidColors}%0A`;
-    if (breakdown.sizeCost > 0) featuresText += `- Adicional de Tamanho: ${breakdown.sizeCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}%0A`;
+  if (btnCheckout) {
+    // Remove previous listeners to avoid duplicates if updatePricingUI is called multiple times
+    const newBtn = btnCheckout.cloneNode(true);
+    btnCheckout.parentNode.replaceChild(newBtn, btnCheckout);
 
-    const message = `Olá! Gostaria de liberar meu acesso ao MeuQRCode.%0A%0A` +
-      `*Valor Mensal:* ${pricing.formattedTotal}%0A` +
-      `${featuresText}%0A` +
-      `Aguardo instruções para pagamento e liberação.`;
+    newBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
 
-    if (btnWhatsapp) {
-      btnWhatsapp.href = `https://wa.me/5588933005519?text=${message}`;
-    }
+      const originalText = newBtn.innerHTML;
+      newBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando Pagamento...';
+      newBtn.disabled = true;
 
-    if (summaryContainer) {
-      let htmlSummary = `<strong>Valor Mensal: <span style="color:var(--primary); font-size:1.1rem;">${pricing.formattedTotal}</span></strong><br><br>`;
-      htmlSummary += `<ul style="list-style:none; padding:0; margin:0;">`;
-      htmlSummary += `<li><i class="fas fa-check-circle" style="color:var(--success); margin-right:6px;"></i> Total QR Codes Ativos: <strong>${breakdown.activeQRs}</strong></li>`;
-      if (breakdown.extraQRs > 0) htmlSummary += `<li><i class="fas fa-plus-circle" style="color:var(--primary); margin-right:6px;"></i> Extras (Pagos): <strong>${breakdown.extraQRs}</strong></li>`;
-      if (breakdown.paidColors > 0) htmlSummary += `<li><i class="fas fa-palette" style="color:var(--primary); margin-right:6px;"></i> Cores Pagas: <strong>${breakdown.paidColors}</strong></li>`;
-      if (breakdown.sizeCost > 0) htmlSummary += `<li><i class="fas fa-expand" style="color:var(--primary); margin-right:6px;"></i> Adicional Tamanho: <strong>${breakdown.sizeCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></li>`;
-      htmlSummary += `</ul>`;
-      summaryContainer.innerHTML = htmlSummary;
-    }
+      try {
+        const payload = {
+          title: `Plano Premium - ${pricing.breakdown.activeQRs} QRs`,
+          unit_price: Number(pricing.total),
+          quantity: 1,
+          userId: window.currentUserId || "unknownUser",
+          itemId: "premium_subscription"
+        };
+
+        const response = await fetch('http://localhost:5002/createPreference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.id) {
+          const mp = new MercadoPago('TEST-95669c81-41ac-44a6-91aa-f8d94f670baa', { locale: 'pt-BR' });
+          mp.checkout({
+            preference: { id: data.id },
+            autoOpen: true
+          });
+
+          // Optionally close the modal while MP opens
+          const blockModal = document.getElementById('blockModal');
+          if (blockModal) blockModal.classList.add('hidden');
+        } else {
+          throw new Error(data.error || "Erro ao gerar preferência");
+        }
+
+      } catch (error) {
+        console.error("Erro no MP:", error);
+        alert("Ocorreu um erro ao iniciar o pagamento. Tente novamente.");
+      } finally {
+        newBtn.innerHTML = originalText;
+        newBtn.disabled = false;
+      }
+    });
+  }
+
+  if (summaryContainer) {
+    let htmlSummary = `<strong>Valor Mensal: <span style="color:var(--primary); font-size:1.1rem;">${pricing.formattedTotal}</span></strong><br><br>`;
+    htmlSummary += `<ul style="list-style:none; padding:0; margin:0;">`;
+    htmlSummary += `<li><i class="fas fa-check-circle" style="color:var(--success); margin-right:6px;"></i> Total QR Codes Ativos: <strong>${pricing.breakdown.activeQRs}</strong></li>`;
+    if (pricing.breakdown.extraQRs > 0) htmlSummary += `<li><i class="fas fa-plus-circle" style="color:var(--primary); margin-right:6px;"></i> Extras (Pagos): <strong>${pricing.breakdown.extraQRs}</strong></li>`;
+    if (pricing.breakdown.paidColors > 0) htmlSummary += `<li><i class="fas fa-palette" style="color:var(--primary); margin-right:6px;"></i> Cores Pagas: <strong>${pricing.breakdown.paidColors}</strong></li>`;
+    if (pricing.breakdown.sizeCost > 0) htmlSummary += `<li><i class="fas fa-expand" style="color:var(--primary); margin-right:6px;"></i> Adicional Tamanho: <strong>${pricing.breakdown.sizeCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></li>`;
+    htmlSummary += `</ul>`;
+    summaryContainer.innerHTML = htmlSummary;
   }
 }
