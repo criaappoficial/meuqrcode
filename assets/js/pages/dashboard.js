@@ -65,6 +65,7 @@ const els = {
   // Menu Links
   menuPayments: document.getElementById('menu-payments'),
   menuSettings: document.getElementById('menu-settings'),
+  menuAdmin: document.getElementById('menu-admin'),
   menuDashboard: document.querySelector('a[href="dashboard.html"]'),
 
   // Views
@@ -369,6 +370,15 @@ function updateUIWithUserData(user) {
   const greetingText = `Olá, ${shortName}! ${saudacao}`;
   const greetingEl = document.getElementById('greeting');
   if (greetingEl) greetingEl.textContent = greetingText;
+
+  // Admin Menu Visibility
+  if (els.menuAdmin) {
+    if (user.isAdmin) {
+      els.menuAdmin.classList.remove('hidden');
+    } else {
+      els.menuAdmin.classList.add('hidden');
+    }
+  }
 }
 
 
@@ -458,7 +468,8 @@ observeAuth(async (user) => {
   updateUIWithUserData({
     ...user,
     displayName: profile?.displayName || user.displayName,
-    photoURL: profile?.photoURL || user.photoURL
+    photoURL: profile?.photoURL || user.photoURL,
+    isAdmin: profile?.isAdmin || false
   });
 
   loadDashboard();

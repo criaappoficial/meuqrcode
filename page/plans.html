@@ -50,6 +50,12 @@
               <span>Meus Pagamentos</span>
             </a>
           </li>
+          <li id="menu-admin" class="hidden">
+            <a href="admin-stats.html">
+              <i class="fas fa-chart-line"></i>
+              <span>Estatísticas</span>
+            </a>
+          </li>
           <li>
             <a href="dashboard.html#settings">
               <i class="fas fa-cog"></i>
@@ -181,11 +187,15 @@
   </script>
 
   <script type="module">
-    import { observeAuth, logoutUser } from '../assets/js/controllers/authController.js';
+    import { observeAuth, logoutUser, getUserProfile } from '../assets/js/controllers/authController.js';
 
     // Auth Check
-    observeAuth((user) => {
-      // User is logged in
+    observeAuth(async (user) => {
+      // Load Firestore profile to check isAdmin
+      const profile = await getUserProfile(user.uid);
+      if (profile && profile.isAdmin) {
+        document.getElementById('menu-admin')?.classList.remove('hidden');
+      }
     }, () => window.location.replace('../login.html'));
 
     // Logout
