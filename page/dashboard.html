@@ -148,187 +148,198 @@
       </section>
 
       <!-- New QR View (Hidden by default) -->
-      <section id="new-qr-view" class="card hidden">
-
-        <form id="qrForm" novalidate>
-          <div class="form-header">
-            <button type="button" id="btn-back-dashboard" class="btn-back" title="Voltar">
-              <i class="fas fa-arrow-left"></i>
-            </button>
-            <h2 class="card-title">Novo QR Code</h2>
+      <!-- New QR Modal -->
+      <div id="qrModal" class="modal-overlay hidden">
+        <div class="modal modal-lg">
+          <div class="modal-header">
+            <h3 class="modal-title" id="qrModalTitle">Novo QR Code</h3>
+            <button class="modal-close" id="closeQrModal">×</button>
           </div>
 
-          <div class="form-group">
-            <label for="title">Título do QR Code *</label>
-            <div class="input-icon-wrapper">
-              <i class="fas fa-heading"></i>
-              <input id="title" name="title" type="text" placeholder="Ex: Catálogo digital" required />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="contentType">Tipo de conteúdo</label>
-            <div class="input-icon-wrapper">
-              <i class="fas fa-layer-group"></i>
-              <select id="contentType" name="contentType">
-                <option value="text">Link / Texto</option>
-                <option value="pix">PIX (Pagamento)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Link fixo do QR Code *</label>
-            <p style="font-size:.85rem; color:var(--text-dim); margin-bottom:.5rem;">
-              Esta será a URL permanente. Você pode alterar o destino depois sem mudar o QR.
-            </p>
-            <div class="url-builder">
-              <i class="fas fa-globe" style="color:var(--text-dim); margin-right:0.5rem;"></i>
-              <span>qrcode-alugueja.netlify.app/</span>
-              <input id="fixedUser" name="fixedUser" type="text" placeholder="seu-id" style="max-width:100px;" />
-              <span>/</span>
-              <input id="fixedSlug" name="fixedSlug" type="text" placeholder="slug-personalizado" />
-            </div>
-          </div>
-
-          <div class="form-group" id="destinationGroup">
-            <label for="destination">Conteúdo do QR *</label>
-            <div class="input-icon-wrapper">
-              <i class="fas fa-link"></i>
-              <input id="destination" name="destination" type="text" placeholder="Cole o link ou digite o texto aqui" />
-            </div>
-          </div>
-
-          <div id="pixFields" class="hidden">
-            <div class="grid-2">
+          <div class="modal-body" style="padding-top: 0.5rem;">
+            <form id="qrForm" novalidate>
               <div class="form-group">
-                <label for="pixKey">Chave PIX *</label>
+                <label for="title">Título do QR Code *</label>
                 <div class="input-icon-wrapper">
-                  <i class="fas fa-key"></i>
-                  <input id="pixKey" name="pixKey" type="text" placeholder="CPF, Email, Tel ou EVP" />
+                  <i class="fas fa-heading"></i>
+                  <input id="title" name="title" type="text" placeholder="Ex: Catálogo digital" required />
                 </div>
               </div>
+
               <div class="form-group">
-                <label for="amount">Valor (Opcional)</label>
+                <label for="contentType">Tipo de conteúdo</label>
                 <div class="input-icon-wrapper">
-                  <i class="fas fa-dollar-sign"></i>
-                  <input id="amount" name="amount" type="number" step="0.01" placeholder="0.00" />
+                  <i class="fas fa-layer-group"></i>
+                  <select id="contentType" name="contentType">
+                    <option value="text">Link / Texto</option>
+                    <option value="pix">PIX (Pagamento)</option>
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <div class="grid-2">
               <div class="form-group">
-                <label for="merchantName">Nome do Recebedor *</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-user-tag"></i>
-                  <input id="merchantName" name="merchantName" type="text" placeholder="Nome completo" />
+                <label>Link fixo do QR Code *</label>
+                <p style="font-size:.85rem; color:var(--text-dim); margin-bottom:.5rem;">
+                  Esta será a URL permanente. Você pode alterar o destino depois sem mudar o QR.
+                </p>
+                <div class="url-builder">
+                  <i class="fas fa-globe" style="color:var(--text-dim); margin-right:0.5rem;"></i>
+                  <span>qrcode-alugueja.netlify.app/</span>
+                  <input id="fixedUser" name="fixedUser" type="text" placeholder="seu-id" style="max-width:100px;" />
+                  <span>/</span>
+                  <input id="fixedSlug" name="fixedSlug" type="text" placeholder="slug-personalizado" />
                 </div>
               </div>
-              <div class="form-group">
-                <label for="merchantCity">Cidade *</label>
+
+              <div class="form-group" id="destinationGroup">
+                <label for="destination">Conteúdo do QR *</label>
                 <div class="input-icon-wrapper">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <input id="merchantCity" name="merchantCity" type="text" placeholder="Cidade" />
+                  <i class="fas fa-link"></i>
+                  <input id="destination" name="destination" type="text"
+                    placeholder="Cole o link ou digite o texto aqui" />
                 </div>
               </div>
-            </div>
 
-            <div class="grid-2">
-              <div class="form-group">
-                <label for="txid">Identificador (TXID)</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-receipt"></i>
-                  <input id="txid" name="txid" type="text" placeholder="***" />
+              <div id="pixFields" class="hidden">
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label for="pixKey">Chave PIX *</label>
+                    <div class="input-icon-wrapper">
+                      <i class="fas fa-key"></i>
+                      <input id="pixKey" name="pixKey" type="text" placeholder="CPF, Email, Tel ou EVP" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="amount">Valor (Opcional)</label>
+                    <div class="input-icon-wrapper">
+                      <i class="fas fa-dollar-sign"></i>
+                      <input id="amount" name="amount" type="number" step="0.01" placeholder="0.00" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label for="merchantName">Nome do Recebedor *</label>
+                    <div class="input-icon-wrapper">
+                      <i class="fas fa-user-tag"></i>
+                      <input id="merchantName" name="merchantName" type="text" placeholder="Nome completo" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="merchantCity">Cidade *</label>
+                    <div class="input-icon-wrapper">
+                      <i class="fas fa-map-marker-alt"></i>
+                      <input id="merchantCity" name="merchantCity" type="text" placeholder="Cidade" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label for="txid">Identificador (TXID)</label>
+                    <div class="input-icon-wrapper">
+                      <i class="fas fa-receipt"></i>
+                      <input id="txid" name="txid" type="text" placeholder="***" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="description">Descrição</label>
+                    <div class="input-icon-wrapper">
+                      <i class="fas fa-comment-alt"></i>
+                      <input id="description" name="description" type="text" placeholder="Ex: Pagamento serviço" />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="form-group">
-                <label for="description">Descrição</label>
-                <div class="input-icon-wrapper">
-                  <i class="fas fa-comment-alt"></i>
-                  <input id="description" name="description" type="text" placeholder="Ex: Pagamento serviço" />
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label for="qrStyle">Estilo</label>
+                  <div class="input-icon-wrapper">
+                    <i class="fas fa-palette"></i>
+                    <select id="qrStyle" name="qrStyle">
+                      <option value="default">Padrão (Preto/Branco)</option>
+                      <option value="dark">Escuro (Invertido)</option>
+                      <option value="light">Claro (Suave)</option>
+                      <option value="blue">Azul Corporativo</option>
+                      <option value="custom">Personalizado (Cor)</option>
+                    </select>
+                    <input type="color" id="qrColor" value="#000000" class="hidden"
+                      style="width: 45px; height: 38px; margin-left: 0.5rem; padding: 0 2px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="qrSize">Tamanho</label>
+                  <div class="input-icon-wrapper">
+                    <i class="fas fa-expand"></i>
+                    <select id="qrSize" name="qrSize">
+                      <option value="200">Pequeno (200px)</option>
+                      <option value="500" selected>Padrão (500px)</option>
+                      <option value="1000">Grande (1000px)</option>
+                      <option value="2000">Extra (2000px)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="qrStyle">Estilo</label>
-              <div class="input-icon-wrapper">
-                <i class="fas fa-palette"></i>
-                <select id="qrStyle" name="qrStyle">
-                  <option value="default">Padrão (Preto/Branco)</option>
-                  <option value="dark">Escuro (Invertido)</option>
-                  <option value="light">Claro (Suave)</option>
-                  <option value="blue">Azul Corporativo</option>
-                  <option value="custom">Personalizado (Cor)</option>
-                </select>
-                <input type="color" id="qrColor" value="#000000" class="hidden"
-                  style="width: 45px; height: 38px; margin-left: 0.5rem; padding: 0 2px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label for="qrFormat">Formato</label>
+                  <div class="input-icon-wrapper">
+                    <i class="fas fa-file-image"></i>
+                    <select id="qrFormat" name="qrFormat">
+                      <option value="png">Imagem (PNG)</option>
+                      <option value="svg">Vetor (SVG)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="active" name="active" checked />
+                  <span>QR Code ativo imediatamente</span>
+                </label>
+              </div>
+
+              <div class="modal-footer" style="padding-bottom: 2rem;">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-qr">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn" style="min-width: 200px;">
+                  <i class="fas fa-magic"></i> Criar QR Code
+                </button>
+              </div>
+            </form>
+
+            <div id="qrPreview" class="qr-preview hidden" style="margin-bottom: 2rem;">
+              <h3><i class="fas fa-check-circle" style="color:var(--success);"></i> QR Code Pronto!</h3>
+              <canvas id="qrCanvas"></canvas>
+              <div id="qrSvgWrap" style="display:none; width:320px;"> </div>
+              <p style="color:var(--text-dim); text-align:center;">
+                <span id="qrUrlLabel">URL Permanente:</span><br />
+              <div
+                style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.25rem;">
+                <code id="qrUrl"
+                  style="background:#eee; padding:4px 8px; border-radius:4px; max-width: 100%; word-break: break-all; font-size: 0.85rem;"></code>
+                <button type="button" id="btn-copy-qr" class="icon-button" title="Copiar"
+                  style="background: var(--bg-accent); padding: 6px; border-radius: 6px; color: var(--primary);">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              </p>
+              <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                <button type="button" class="btn btn-success" id="downloadBtn">
+                  <i class="fas fa-download"></i> Baixar
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-done-qr">
+                  Concluído
+                </button>
               </div>
             </div>
-
-            <div class="form-group">
-              <label for="qrSize">Tamanho</label>
-              <div class="input-icon-wrapper">
-                <i class="fas fa-expand"></i>
-                <select id="qrSize" name="qrSize">
-                  <option value="200">Pequeno (200px)</option>
-                  <option value="500" selected>Padrão (500px)</option>
-                  <option value="1000">Grande (1000px)</option>
-                  <option value="2000">Extra (2000px)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="qrFormat">Formato</label>
-              <div class="input-icon-wrapper">
-                <i class="fas fa-file-image"></i>
-                <select id="qrFormat" name="qrFormat">
-                  <option value="png">Imagem (PNG)</option>
-                  <option value="svg">Vetor (SVG)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-inline">
-              <input type="checkbox" id="active" name="active" checked />
-              <span>QR Code ativo imediatamente</span>
-            </label>
-          </div>
-
-          <div style="margin-top: 2rem; margin-bottom: 3rem; display: flex; justify-content: flex-end;">
-            <button type="submit" class="btn btn-primary" id="submitBtn"
-              style="padding: 0.75rem 2.5rem; min-width: 220px;">
-              <i class="fas fa-magic"></i> Criar QR Code
-            </button>
-          </div>
-        </form>
-
-        <div id="qrPreview" class="qr-preview hidden">
-          <h3><i class="fas fa-check-circle" style="color:var(--success);"></i> QR Code Pronto!</h3>
-          <canvas id="qrCanvas"></canvas>
-          <div id="qrSvgWrap" style="display:none; width:320px;"> </div>
-          <p style="color:var(--text-dim); text-align:center;">
-            URL Permanente:<br />
-            <code id="qrUrl" style="background:#eee; padding:2px 6px; border-radius:4px;"></code>
-          </p>
-          <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
-            <button type="button" class="btn btn-success" id="downloadBtn">
-              <i class="fas fa-download"></i> Baixar
-            </button>
-            <button type="button" class="btn btn-secondary" id="btn-back-dashboard-2">
-              <i class="fas fa-arrow-left"></i> Voltar ao Painel
-            </button>
           </div>
         </div>
-      </section>
+      </div>
 
       <!-- Payment History View -->
       <section id="payment-history-view" class="card hidden">
@@ -485,7 +496,7 @@
         </form>
       </section>
 
-
+      <!--# Push -->
       <!-- Delete Account Confirmation Modal -->
       <div id="deleteAccountModal" class="modal-overlay hidden">
         <div class="modal">
