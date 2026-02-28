@@ -52,13 +52,15 @@ const els = {
 
   // Views
   dashboardView: document.getElementById('dashboard-view'),
-  newQrView: document.getElementById('new-qr-view'),
+  qrModal: document.getElementById('qrModal'),
+  closeQrModal: document.getElementById('closeQrModal'),
+  qrModalTitle: document.getElementById('qrModalTitle'),
   settingsView: document.getElementById('settings-view'),
   profileEditView: document.getElementById('profile-edit-view'),
   btnNewQr: document.getElementById('btn-new-qr'),
 
-  btnBackDashboard: document.getElementById('btn-back-dashboard'),
-  btnBackDashboard2: document.getElementById('btn-back-dashboard-2'),
+  btnCancelQr: document.getElementById('btn-cancel-qr'),
+  btnDoneQr: document.getElementById('btn-done-qr'),
 
   // Menu Links
   menuPayments: document.getElementById('menu-payments'),
@@ -135,7 +137,7 @@ els.blockModal?.addEventListener('click', (e) => {
 
 // Toggle Views
 const showDashboard = () => {
-  els.newQrView.classList.add('hidden');
+  els.qrModal.classList.add('hidden');
   els.settingsView?.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
   els.paymentHistoryView?.classList.add('hidden');
@@ -153,7 +155,7 @@ const showDashboard = () => {
 const showPaymentHistory = (e) => {
   e?.preventDefault();
   els.dashboardView.classList.add('hidden');
-  els.newQrView.classList.add('hidden');
+  els.qrModal.classList.add('hidden');
   els.settingsView?.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
   els.paymentHistoryView?.classList.remove('hidden');
@@ -166,31 +168,29 @@ const showPaymentHistory = (e) => {
   loadPaymentHistory();
 };
 
+const closeQrModal = () => {
+  els.qrModal.classList.add('hidden');
+};
+
 const showNewQr = () => {
-  // selectedDocId = null; // Removed: selectedDocId should be managed by caller (btnNewQr or edit action)
-  els.newQrView.classList.add('hidden');
-  els.settingsView?.classList.add('hidden');
-  els.profileEditView?.classList.add('hidden');
-  els.paymentHistoryView?.classList.add('hidden');
-  els.newQrView.classList.remove('hidden');
-
-
-  els.menuDashboard?.classList.remove('active');
-  els.menuSettings?.classList.remove('active');
-  els.menuPayments?.classList.remove('active');
+  els.qrModal.classList.remove('hidden');
 
   // Reset form
   els.form.reset();
   els.preview.classList.add('hidden');
   els.form.classList.remove('hidden');
+
   els.submitBtn.disabled = false;
-  els.submitBtn.textContent = 'Criar QR Code';
-  const headerTitle = els.newQrView.querySelector('.card-title');
-  if (headerTitle) headerTitle.textContent = 'Novo QR Code';
+  els.qrModalTitle.textContent = selectedDocId ? 'Editar QR Code' : 'Novo QR Code';
+  els.submitBtn.innerHTML = selectedDocId ? '<i class="fas fa-save"></i> Salvar Alterações' : '<i class="fas fa-magic"></i> Criar QR Code';
 
   // Enable fixed ID fields
   if (els.fixedUser) els.fixedUser.disabled = false;
   if (els.fixedSlug) els.fixedSlug.disabled = false;
+
+  if (!selectedDocId && els.fixedUser) {
+    els.fixedUser.value = (auth.currentUser?.displayName || 'user').toLowerCase().replace(/\s+/g, '-');
+  }
 
   // Trigger content type change to set visibility correct
   els.contentType.dispatchEvent(new Event('change'));
@@ -201,11 +201,10 @@ const showNewQr = () => {
 const showSettings = (e) => {
   e?.preventDefault();
   els.dashboardView.classList.add('hidden');
-  els.newQrView.classList.add('hidden');
+  els.qrModal.classList.add('hidden');
   els.profileEditView?.classList.add('hidden');
   els.paymentHistoryView?.classList.add('hidden');
   els.settingsView?.classList.remove('hidden');
-
 
   // Update Active Menu
   els.menuDashboard?.classList.remove('active');
@@ -235,6 +234,13 @@ const showProfileEdit = () => {
 els.btnNewQr?.addEventListener('click', () => {
   selectedDocId = null; // Explicitly clear for new
   showNewQr();
+});
+
+els.closeQrModal?.addEventListener('click', closeQrModal);
+els.btnCancelQr?.addEventListener('click', closeQrModal);
+els.btnDoneQr?.addEventListener('click', closeQrModal);
+els.qrModal?.addEventListener('click', (e) => {
+  if (e.target === els.qrModal) closeQrModal();
 });
 
 // Menu Listeners
@@ -928,9 +934,8 @@ els.tableBody?.addEventListener('click', async (event) => {
     isEditingPopulation = true;
 
     // Update header title
-    const headerTitle = els.newQrView.querySelector('.card-title');
-    if (headerTitle) headerTitle.textContent = 'Editar QR Code';
-    els.submitBtn.textContent = 'Salvar Alterações';
+    if (els.qrModalTitle) els.qrModalTitle.textContent = 'Editar QR Code';
+    if (els.submitBtn) els.submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
 
     // Populate fields
     if (els.form.title) els.form.title.value = item.title || '';

@@ -363,6 +363,10 @@ select:hover {
   -ms-overflow-style: none; /* IE/Edge */
 }
 
+.modal-lg {
+  max-width: 800px;
+}
+
 .modal::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
 }
