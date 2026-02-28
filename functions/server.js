@@ -36,6 +36,14 @@ app.post('/createPreference', async (req, res) => {
                 failure: "https://meuqrcode.com/page/dashboard.html?payment=failure",
                 pending: "https://meuqrcode.com/page/dashboard.html?payment=pending",
             },
+            payment_methods: {
+                excluded_payment_types: [
+                    { id: "debit_card" },
+                    { id: "prepaid_card" },
+                    { id: "atm" }
+                ],
+                installments: 12
+            },
             auto_return: undefined,
         };
 
