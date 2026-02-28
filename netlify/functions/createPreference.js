@@ -1,7 +1,7 @@
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 exports.handler = async (event, context) => {
-    // Only allow POST
+    // Only allow POST requests
     if (event.httpMethod !== "POST") {
         return { statusCode: 405, body: "Method Not Allowed" };
     }
