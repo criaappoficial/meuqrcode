@@ -8,7 +8,7 @@ import { auth, db } from '../core/firebase.js';
 import { collection, query, where, getDocs, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 
-
+// Teste
 console.log('Dashboard JS v2 loaded');
 
 // AUTO-FIX: Garante que o usuário tenha um perfil no Firestore
