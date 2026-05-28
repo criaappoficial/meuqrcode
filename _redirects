@@ -1,5 +1,8 @@
 # Netlify Redirects
 
+# Force root to serve home page
+/ /index.html 200
+
 # Ensure admin pages are served directly (although Netlify does this by default for existing files, being explicit helps)
 /page/edit.html      /page/edit.html      200
 /page/new.html       /page/new.html       200
