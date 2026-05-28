@@ -1,4 +1,4 @@
-# 📱 QR Code Manager
+# 📱 QR Code Alugueja
 
 Sistema completo de gerenciamento de QR Codes dinâmicos usando **HTML**, **CSS**, **JavaScript puro** e **Firebase**.
 
