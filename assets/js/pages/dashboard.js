@@ -31,7 +31,7 @@ async function ensureUserProfile(user) {
   }
 }
 
-const PRIMARY_DOMAIN = 'https://qrcode-alugueja.netlify.app';
+const PRIMARY_DOMAIN = 'https://qrpronto.com.br';
 // Always use production domain for QR content, even on localhost
 const BASE_URL = PRIMARY_DOMAIN;
 const composeQrUrl = (id) => `${PRIMARY_DOMAIN}/${id}`;
