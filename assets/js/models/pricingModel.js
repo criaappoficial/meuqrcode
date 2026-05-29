@@ -12,7 +12,7 @@ export const PricingModel = {
   },
 
   LIMITS: {
-    FREE_LINKS: 2,
+    FREE_LINKS: 4,
     FREE_COLORS: ['default', 'dark'],
     FREE_SIZE: 500
   },
